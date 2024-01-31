@@ -1244,19 +1244,130 @@ from MC.Employees
 
 --Query: Customers who have placed an order along with their order information and also those 
 --customers who have not placed any orders using union.
+use studentDB
+create schema mc
+
+create table [mc].customer_tbl(
+								cust_id int primary key,
+								cust_name varchar(30),
+								city varchar(40),
+								salary money,
+								depart_id int
+							)
+
+insert into  [mc].customer_tbl (cust_id, cust_name, city, salary, depart_id) values (1, 'Subara', 'kolkata', 50000.00, 1),
+(2, 'Pritam', 'salt lake', 60000.50, 1),
+(3, 'Rahul', 'Behala', 55000.75, 3),
+(4, 'Souvik', 'newtown', 70000.25, 4),
+(5, 'Pranb', 'DLF1', 65000.80, 3);
+
+
+create table [mc].order_placed(
+								or_id int primary key,
+								or_name varchar(30),
+								or_no int,
+								cust_id int,
+								constraint or_tbl_fk foreign key (cust_id)  references [mc].customer_tbl(cust_id)
+							)
+
+INSERT INTO [mc].order_placed (or_id, or_name, or_no, cust_id)
+VALUES
+    (1, 'Order1', 101, 1),
+    (2, 'Order2', 102, 1),
+    (3, 'Order3', 103, 3),
+    (4, 'Order4', 104, 5),
+    (5, 'Order5', 105, 5);
+
+select * from mc.customer_tbl
+select * from mc.order_placed
+
+select c.cust_id, c.cust_name,c.city, o.or_id,o.or_no
+from mc.customer_tbl as c
+inner join mc.order_placed as o
+on c.cust_id=o.cust_id
+union
+select c.cust_id, c.cust_name,c.city, o.or_id,o.or_no
+from mc.customer_tbl as c
+left outer join mc.order_placed as o
+on c.cust_id=o.cust_id
+where o.or_id is null
+
+--Query: Display employees whose salary is greater than the average salary in their department using correlated subquery.
+select * from mc.customer_tbl
+
+select cust_id,cust_name,city,salary
+from mc.customer_tbl as c1
+where salary>(select AVG(salary) from mc.customer_tbl as c2
+				where c2.depart_id=c1.depart_id
+				group by depart_id)
+
+insert into  [mc].customer_tbl (cust_id, cust_name, city, salary, depart_id) values (6, 'pappu', 'kolkata', 80000.00, 3)
+
+--Query : Find customers who have placed orders with an amount greater than the average order amount using correlated subquery.
+select * from mc.customer_tbl
+select * from mc.order_placed
+
+select c1.cust_id,c1.cust_name,c1.city,c1.salary, o.or_id, o.or_name
+from mc.customer_tbl as c1, mc.order_placed as o
+where o.cust_id=c1.cust_id and salary>
+(select AVG(salary) from mc.customer_tbl as an where c1.cust_id=an.cust_id
+group by cust_id)
+
+ 
 
 
 
+select c1.cust_id,c1.cust_name,c1.city,c1.salary, o.or_id, o.or_name
+from mc.customer_tbl as c1
+inner join mc.order_placed as o 
+on c1.cust_id=o.cust_id 
+where salary>(select AVG(salary) from mc.customer_tbl as c2 where c2.cust_id=o.cust_id)
+
+select SUBSTRING ('Sql server',1,4)
+
+---31/01/2024
+--fromat fucntion
+declare @d date=getdate()
+select FORMAT(@d,'dd/MM/yyyy','en-US') as 'date'
+
+declare @dt datetime=getdate()
+select FORMAT(getdate(),'dd/MM/yyyy hh:mm tt') as 'Today'
 
 
+select FORMAT(123456789,'XXX-XX-XXXX') as 'customer number'
+
+SELECT 
+  CONCAT(
+    SUBSTRING(FORMAT(123456789, 'XXXXXXXXXX'), 1, 4),
+    '-',
+    SUBSTRING(FORMAT(123456789, '000000000'), 5, 4)
+  ) AS 'Last_digit_of_Account_number';
 
 
+select STUFF(123456789,1,5,'XXXXX-')
+
+use BikeStores
+SELECT order_id, required_date, shipped_date,
+CASE WHEN DATEDIFF(day, required_date, shipped_date) > 0
+THEN 'Late' ELSE 'OnTime'
+END shipment
+FROM sales.orders
+WHERE shipped_date IS NOT NULL
+ORDER BY required_date;
+
+--only specific part display from the date
+select DATEPART(MONTH,getdate()) as 'year'
+
+--the gate date function returns date and time so if we want to covert into date we use this . so it will delete the time
+SELECT CONVERT(DATE, GETDATE()) date;select CONVERT(char,GETDATE(),100)--another whay to display -- using cast SELECT CAST(GETDATE() AS DATE) as 'date';
+ SELECT TRY_CAST('12.34' AS DECIMAL(4, 2)) Result -- display 12.34 no error SELECT TRY_CAST('14562.34' AS DECIMAL(4, 2)) Result -- display null because there is an error SELECT TRY_CAST(GETDATE() AS DATE) Result; SELECT ROUND(235.465, 2) AS RoundValue
+
+ SELECT ISNUMERIC('gte') result;
 
 
+ select isnumeric(salary) as is_numeric
+ from HR.employee
 
-
-
-
-
-
-
+ select * from HR.employee
+ 
+ insert into [HR].employee(emp_name,dept_id) values('mm',101)
