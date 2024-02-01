@@ -1546,4 +1546,64 @@ SELECT @CountryName = CountryName
 FROM SampleTable WHERE Id = @Counter
 PRINT CONVERT(VARCHAR,@Counter) + '. country name is ' + @CountryName
 SET @Counter = @Counter + 1
-ENDdeclare @i int= 1while @i<5 begin 	print replicate('*',@i)	set @i=@i+1enddeclare @i int= 1while @i<5 begin 	print replicate(' ',5-@i)+replicate('*',@i)	set @i=@i+1enddeclare @i int= 5while @i>0 begin 	print replicate('*',@i)	set @i=@i-1enddeclare @i int= 1while @i<5begin 	print replicate(0+@i,@i)	set @i=@i+1endcreate table bikeshop(						id int primary key identity,						bike_name varchar(50) not null,						price float						);declare @countId int=1while @countId<=10begin	insert into bikeshop values('Bike-'+CAST(@countid as varchar),@countId*500)	set @countId=@countId+1endselect * from bikeshopdeclare @start_date date ='2024/01/17'declare @end_date date='2024/01/26'declare @loop_date date=@start_datewhile @loop_date<=@end_datebegin		select @loop_date		set @loop_date=dateadd(year,1,@loop_date)enddeclare @i int =1while @i<10begin	print @i	set @i=@i+1	if @i=5		continueend
+ENDdeclare @i int= 1while @i<5 begin 	print replicate('*',@i)	set @i=@i+1enddeclare @i int= 1while @i<5 begin 	print replicate(' ',5-@i)+replicate('*',@i)	set @i=@i+1enddeclare @i int= 5while @i>0 begin 	print replicate('*',@i)	set @i=@i-1enddeclare @i int= 1while @i<5begin 	print replicate(0+@i,@i)	set @i=@i+1endcreate table bikeshop(						id int primary key identity,						bike_name varchar(50) not null,						price float						);declare @countId int=1while @countId<=10begin	insert into bikeshop values('Bike-'+CAST(@countid as varchar),@countId*500)	set @countId=@countId+1endselect * from bikeshopdeclare @start_date date ='2023/01/17'declare @end_date date='2024/01/26'declare @loop_date date=@start_datewhile @loop_date<=@end_datebegin		select @loop_date		set @loop_date=dateadd(day,1,@loop_date)enddeclare @i int =0while @i<9begin	set @i=@i+1	if @i=5		continue	print @i	endalter function fn_getAge(@dob date)returns int asbegin	declare @age int	if (month(@dob)>6)	begin		set @age=datediff(year,@dob,getdate())+1	end	else  	begin		set @age=datediff(year,@dob,getdate())	end	return @ageendselect dbo.fn_getAge('1982/12/10') as ageuse bikestores--Multi-Statement Table-Valued Functionalter function fn_udfGetEmploye()returns @Employee table(	first_name varchar(50),	last_name varchar(40),	phone varchar(20),	employee_type varchar(20)	)	as	begin		insert into @Employee 		select first_name,last_name,phone,'Manager'		from sales.customers		insert into @Employee 		select first_name,last_name,phone,'staff'		from sales.customers	return	end;select * from fn_udfGetEmploye();--one inline table valued functionuse use Exam_DB
+select name from sysobjects 
+where xtype='U'create table mcc.customer_tbl(								cust_id int primary key,								cust_name varchar(50),								city varchar(50),								salary money,								gender char(4)								)								
+insert into mcc.customer_tbl (cust_id, cust_name, city, salary, gender)values
+(1, 'Subrata', 'Kolkata', 50000.00, 'Male'),
+(2, 'Subhasis', 'salt lake', 60000.00, 'Fema'),
+(3, 'Avik', 'Chicago', 55000.00, 'Male'),
+(4, 'Krishna', 'Kolkata', 52000.00, 'Fema'),
+(5, 'Durga', 'Behala', 70000.00, 'Male'),
+(6, 'Puja', 'Kerala', 48000.00, 'Fema'),
+(7, 'Mousami', 'Delhi', 65000.00, 'Male'),
+(8, 'Ankita', 'Krishnanagr', 58000.00, 'Fema'),
+(9, 'Sumaya', 'Amtala', 51000.00, 'Male'),
+(10, 'Sophia White', 'Denver', 59000.00, 'Fema');
+alter function fn_getCustomerbyId(@gender char(4))returns tableas return(	select cust_id, cust_name, city, salary, gender	from mcc.customer_tbl	where gender=@gender) select * from fn_getCustomerbyId('Male')create table mcc.dept_tbl(							dept_id int primary key,							dept_name varchar(30),							cust_id int,							foreign key (cust_id) references mcc.customer_tbl(cust_id)							)INSERT INTO mcc.dept_tbl (dept_id, dept_name, cust_id)
+VALUES 
+    (1, 'Sales', 1),
+    (2, 'Marketing', 1),
+    (3, 'Finance', 3),
+    (4, 'Human Resources', 3),
+    (5, 'Engineering', 3),
+    (6, 'Customer Support', 2),
+    (7, 'IT', 7);
+
+create function fn_getDeptDetailsByCust(@cust_id int)
+returns table
+as
+return
+(
+	select dept_id,dept_name,cust_id
+	from mcc.dept_tbl
+	where cust_id=@cust_id
+)
+
+select * from fn_getDeptDetailsByCust(1)
+
+select   c.cust_name, c.city, c.salary, c.gender,d.dept_id,d.dept_name
+from  mcc.customer_tbl as c
+cross apply fn_getDeptDetailsByCust(c.cust_id) as d 
+
+
+---create to scaler function
+select * from mcc.customer_tbl
+
+create function mcc.fn_addtwonumber(
+@x int,
+@y int
+)
+returns int
+as
+begin
+		return @x + @y ;
+end;select mcc.fn_addtwonumber(5,5) 'Total value';create function mcc.fn_getsalary(
+	@salary dec(10,2)
+)
+returns int
+as
+begin
+		return @salary * 5 ;
+end;select cust_name,mcc.fn_getsalary(salary) 'Total value'from mcc.customer_tbl;
+
