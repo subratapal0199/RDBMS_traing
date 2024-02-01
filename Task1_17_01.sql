@@ -1371,3 +1371,179 @@ SELECT CONVERT(DATE, GETDATE()) date;select CONVERT(char,GETDATE(),100)--anot
  select * from HR.employee
  
  insert into [HR].employee(emp_name,dept_id) values('mm',101)
+
+ SELECT value
+FROM STRING_SPLIT('I am a boy', ' ');SELECT NEWID() AS GUID;use BikeStoresSELECT * FROM (
+SELECT product_id,product_name,brand_id,list_price, rank () OVER (
+PARTITION BY brand_id
+ORDER BY list_price DESC
+) price_rank
+FROM production.products
+) t
+WHERE price_rank <= 3;SELECT * FROM (
+SELECT product_id,product_name,brand_id,list_price, dense_rank () OVER (
+PARTITION BY brand_id
+ORDER BY list_price DESC
+) price_rank
+FROM production.products
+) t
+--WHERE price_rank <= 3;
+
+
+SELECT first_name, last_name, city,
+ROW_NUMBER() OVER (PARTITION BY city ORDER BY first_name ) row_num
+FROM sales.customers
+ORDER BY city;
+use studentDB
+
+
+insert into hr.emp_tbl(emp_name,gender,address,salary,doj,dept_id)values ('subrata pal','M','New Alipore',33000,'2024-01-16',101)
+
+
+select emp_id,emp_name,address,dept_id,
+ROW_NUMBER() over(partition by dept_id order by address) as 'row_number'
+from [HR].emp_tbl
+order by address
+
+use BikeStores
+select * from HR.order_tbl
+select * from HR.product_tbl
+
+INSERT INTO [hr].product_tbl (pro_id, pro_name)
+VALUES
+    (4, 'Jeans'),
+    (5, 'Jeans'),
+    (6, 'Shirt'),
+    (7, 'Sweater'),
+    (8, 'Dress');
+
+-- Assuming you have already created the order table
+INSERT INTO hr.order_tbl (o_id, o_date, pro_id)
+VALUES
+    (103, '2024-02-05', 2),
+    (104, '2024-02-18', 3),
+    (105, '2024-03-02', 2),
+    (106, '2024-03-15', 1);
+
+select * from HR.order_tbl
+select * from HR.product_tbl
+
+SELECT * FROM (
+SELECT o_id,o_date,pro_id, dense_rank () OVER (
+PARTITION BY pro_id
+ORDER BY o_date 
+) as 'rank_details'
+FROM HR.order_tbl
+) t
+
+
+--  delete dublicate rows from based on title and author from books table book_id,title,author id publish year using row number
+use studentDB
+select * from [HR].book
+
+with cte as(
+select *, ROW_NUMBER() over(partition by author_id order by publish_date) as rowNumber
+from HR.book
+)
+delete from cte where rowNumber>1
+
+select * from cte
+
+
+-- Create the sales table
+CREATE TABLE hr.sales (
+    transiton_id INT primary key,
+    sales_rp_id INT,
+    transtion_date DATE,
+    ammount DECIMAL(10, 2)
+);
+drop table sales
+-- Insert 10 rows of data into the sales table
+INSERT INTO hr.sales (transiton_id, sales_rp_id, transtion_date, ammount)
+VALUES
+    (1, 101, '2024-01-01', 500.50),
+    (2, 102, '2023-03-02', 150.75),
+    (3, 101, '2023-01-03', 200.00),
+    (4, 101, '2024-03-04', 120.25),
+    (5, 103, '2022-02-03', 80.75),
+    (6, 103, '2024-04-06', 150.00),
+    (7, 102, '2024-01-04', 300.50),
+    (8, 108, '2024-01-01', 60.25),
+    (9, 109, '2024-01-03', 200.75),
+    (10, 110, '2024-03-03', 90.00);
+
+select * from HR.sales
+
+--dense rank: Assign a rank  to sales representatives based on their total sales amount on table having 
+
+select * from (
+select transiton_id, sales_rp_id, transtion_date, sum(ammount) as 'total_salary', DENSE_RANK() over(
+partition by sales_rp_id
+order by transtion_date
+) as sales_rp_rank
+from HR.sales
+) t
+
+select 
+from [HR]
+
+--01/02/2024
+
+
+use Exam_DB
+select name from sysobjects 
+where xtype='U'
+
+use BikeStores
+
+select count(order_id) from sales.orders
+where order_status=1 and YEAR(order_date)=201
+
+SELECT order_status,COUNT(order_id) as order_count
+FROM sales.orders
+WHERE YEAR(order_date) = 2018
+GROUP BY order_status;select * from sales.ordersinsert into sales.orders(customer_id,order_status,order_date,required_date,store_id,staff_id) values(259,5,'2018-01-01','2018-01-03',2,6)insert into sales.orders(customer_id,order_status,order_date,required_date,store_id,staff_id) values(324,5,'2018-01-01','2018-01-03',2,6)SELECT
+CASE order_status
+	WHEN 1 THEN 'Pending'
+	WHEN 2 THEN 'Processing'
+	WHEN 3 THEN 'Rejected'
+	WHEN 4 THEN 'Completed'
+	
+END AS order_status,
+COUNT(order_id) order_count
+FROM sales.orders
+WHERE YEAR(order_date) = 2018
+GROUP BY order_status;
+
+SELECT 
+			SUM(CASE WHEN order_status = 1 THEN 1 ELSE 0 END) AS 'Pending',
+			SUM(CASE WHEN order_status = 2 THEN 1 ELSE 0 END) AS 'Processing',
+			SUM(CASE WHEN order_status = 3 THEN 1 ELSE 0 END) AS 'Rejected',
+			SUM(CASE WHEN order_status = 4 THEN 1 ELSE 0 END) AS 'Completed',
+		COUNT(*) AS Total
+FROM sales.orders
+WHERE YEAR(order_date) = 2018;declare @id intset @id=0while @id<10begin	/*if @id=3	begin		continue	end*/	print @id	set @id=@id+1endCREATE TABLE SampleTable(						Id INT, 						CountryName NVARCHAR(100), 						ReadStatus TINYINT						)INSERT INTO SampleTable ( Id, CountryName, ReadStatus) Values 
+(1, 'Germany', 0),
+(2, 'France', 0),
+(3, 'Italy', 0),
+(4, 'Netherlands', 0) ,
+(5, 'Poland', 0)
+
+SELECT * FROM SampleTabledeclare @counter int,@maxId int, @countryName nvarchar(100)select @counter=min(id),@maxId=max(id)from SampleTableWHILE(@Counter IS NOT NULL AND @Counter <= @MaxId)
+BEGIN
+	SELECT @CountryName = @CountryName
+	FROM SampleTable 
+	WHERE id = @Counter
+	PRINT CONVERT(VARCHAR,@Counter) + '. country name is ' + @CountryName
+	SET @Counter = @Counter + 1
+ENDDECLARE @Counter INT , @MaxId INT,@CountryName NVARCHAR(100)
+SELECT @Counter = min(Id) , @MaxId = max(Id)
+FROM SampleTable
+WHILE(@Counter IS NOT NULL
+AND @Counter <= @MaxId)
+BEGIN
+SELECT @CountryName = CountryName
+FROM SampleTable WHERE Id = @Counter
+PRINT CONVERT(VARCHAR,@Counter) + '. country name is ' + @CountryName
+SET @Counter = @Counter + 1
+ENDdeclare @i int= 1while @i<5 begin 	print replicate('*',@i)	set @i=@i+1enddeclare @i int= 1while @i<5 begin 	print replicate(' ',5-@i)+replicate('*',@i)	set @i=@i+1enddeclare @i int= 5while @i>0 begin 	print replicate('*',@i)	set @i=@i-1enddeclare @i int= 1while @i<5begin 	print replicate(0+@i,@i)	set @i=@i+1endcreate table bikeshop(						id int primary key identity,						bike_name varchar(50) not null,						price float						);declare @countId int=1while @countId<=10begin	insert into bikeshop values('Bike-'+CAST(@countid as varchar),@countId*500)	set @countId=@countId+1endselect * from bikeshopdeclare @start_date date ='2024/01/17'declare @end_date date='2024/01/26'declare @loop_date date=@start_datewhile @loop_date<=@end_datebegin		select @loop_date		set @loop_date=dateadd(year,1,@loop_date)enddeclare @i int =1while @i<10begin	print @i	set @i=@i+1	if @i=5		continueend
