@@ -423,7 +423,8 @@ order by [product_name]
 
 SELECT [c].[customer_id], [first_name], [last_name], [order_id]
 FROM [sales].[customers] as c
-INNER JOIN [sales].[orders] as o ON [o].[customer_id] = [c].[customer_id];
+INNER JOIN [sales].[orders] as o ON [o].[customer_id] = [c].[customer_id];
+
 select sum(case when [order_status]=1 then 1 else 0 end) as 'Pending',
 	   sum(case when [order_status]=2 then 1 else 0 end) as 'Processing',
 	   sum(case when [order_status]=3 then 1 else 0 end) as 'Rejected',
@@ -479,11 +480,17 @@ use BikeStores
 select p.product_id, product_name, order_id
 from production.products as p 
 left join sales.order_items o ON o.product_id = p.product_id and o.order_id = 100
-order by order_id descselect p.product_id, product_name, order_id
+order by order_id desc
+
+select p.product_id, product_name, order_id
 from production.products as p 
 left join sales.order_items o ON o.product_id = p.product_id 
 --where o.order_id = 100
-order by order_id descselect * from sales.order_itemsselect * from production.products
+order by order_id desc
+
+select * from sales.order_items
+select * from production.products
+
 select p.product_id, product_name, order_id
 from production.products as p 
 inner join sales.order_items o ON o.product_id = p.product_id 
@@ -666,12 +673,14 @@ order by [price] desc
 
 SELECT distinct city
 FROM sales.customers
-ORDER BY city;
+ORDER BY city;
+
 use BikeStores
 SELECT c.id candidate_id, c.fullname candidate_name, e.id employee_id, e.fullname employee_name
 FROM hr.candidates c
 FULL JOIN hr.employees e
-ON e.fullname = c.fullname
+ON e.fullname = c.fullname
+
 select * from sales.stores
 
 select s.[store_id], p.[product_id] isnull(sales,0) as sales
@@ -736,9 +745,163 @@ create table [sales].[targets]
 (
 [target_id] int primary key,
 [percentage] decimal(4, 2) not null default 0 
-);insert into [sales].[targets] ([target_id],[percentage])values														(2,0.3),														(3,0.5), 														(4,0.6), 														(5,0.8);create table [sales].[commissions](									[staff_id] int primary key,									[target_id] int,									[base_ammount] decimal(10,2) not null default 0,									[commission] decimal(10,2) not null default 0,									foreign key([target_id]) references [sales].[targets]([target_id]),
-									);Insert into [sales].[commissions] ([staff_id], [base_ammount],[target_id]) values (1,100000,2), (2,120000,1),(3,80000,3),(4,900000,4),
-(5,950000,5);select * from [sales].[targets]select * from [sales].[commissions]update [sales].[commissions] set [sales].[commissions].[commission] =c.[base_ammount] * t.[percentage]from [sales].[commissions] as c inner join [sales].[targets] as ton c.target_id = t.target_id;insert into [sales].[commissions]([staff_id],[base_ammount],[target_id]) values																		(6,100000,null),																		(7,12000,null);update [sales].[commissions]set [sales].[commissions].[commission]=[base_ammount]*coalesce(t.[percentage],0.1)from [sales].[commissions] as c left join [sales].[targets] as ton c.target_id = t.target_id;select * from [sales].commissionscreate table[HR].[product_tbl](								[pro_id] int primary key,								[pro_name] varchar(30) not null								)create table [HR].[order_tbl](								[o_id] int primary key,								[o_date] date,								[pro_id] int foreign key references [HR].[product_tbl]([pro_id])								)insert into [HR].[product_tbl]([pro_id],[pro_name]) values 															(1,'Dress'),(2,'jacket'),(3,'Shirt')insert into [HR].[order_tbl]([o_id],[o_date],[pro_id]) values 															(101,'2024/01/12',1),(102,'2024/01/23',1),(103,'2024/02/22',2)select * from [HR].[product_tbl]select * from [HR].[order_tbl]delete o from [HR].[order_tbl] as oleft join [HR].[product_tbl] as p on p.[pro_id]=o.[pro_id]where o.[pro_id]=2--small assignmentuse PracticeDBselect c.firstname,c.lastname, c.phone,o.OrderNumber,o.totalamount from dbo.Customer as cinner join dbo.[Order] as o on c.Id=o.CustomerIdwhere o.[TotalAmount]>2000select firstname,city,country  from [dbo].[Customer] where Country=(select country from [dbo].[Customer] where firstname='rita')select s.id, s.companyname,s.Country,s.phone,p.id,p.productname from [dbo].[Supplier] as sinner join [dbo].[Product] as p on s.[id]=p.[SupplierId]where p.[IsDiscontinued]=1select * from [dbo].[Product]select o.id,o.orderdate,TotalAmount from [dbo].[Order] as ojoin [dbo].OrderItem as oi on oi.[orderid]=o.[id]where oi.OrderId is nullselect c.firstname,o.OrderNumber,oi.quantity from [dbo].Customer as cinner join [dbo].[Order] as o on c.Id=o.CustomerIdinner join [dbo].OrderItem as oi on oi.OrderId=o.Idselect o.OrderNumber,c.FirstName,count(*) as 'total'from [dbo].Customer as cinner join [dbo].[Order] as o on c.Id=o.CustomerIdinner join [dbo].OrderItem as oi on oi.OrderId=o.Idgroup by o.OrderNumber,c.FirstNameselect FirstName,lastname,city from [dbo].[Customer] where FirstName like('%th')use BikeStoresselect s.store_name,s.city , p.product_name,oi.quantity from [production].[products] as pinner join [sales].order_items as oi on p.product_id=oi.product_idinner join [production].stores as s on s.prodselect s.first_name as staff, m.first_name as managerfrom [sales].staffs as sleft  join [sales].staffs as mon s.manager_id=m.staff_iduse BikeStoresselect c.category_name, cast(round(AVG(p.list_price),2)  as dec(10,2)) as avg_product_pricefrom production.products as pinner join production.categories as con p.category_id=c.category_idgroup by c.category_nameorder by c.category_nameselect c.category_name, cast(round(AVG(p.list_price),2)  as dec(10,2)) as avg_product_pricefrom production.products as pinner join production.categories as con p.category_id=c.category_idgroup by c.category_namehaving cast(round(AVG(p.list_price),2)  as dec(10,2)) >500order by c.category_nameselect count(*) as product_countfrom production.productswhere list_price>500select * into [bikestores].[hr].[employe]from [HRDB].[dbo].employeesselect * from [hr].[employe]select department_id,sum(salary) as total,count(department_id) as totalEmplyeefrom [BikeStores].[HR].[employe]group by [department_id]select manager_id,count(first_name)from HR.employegroup by manager_idselect m.first_name, count(e.employee_id) as 'totalEmp'from HR.employe as ejoin HR.employe as mon e.manager_id=m.employee_idgroup by m.first_name
+);
+
+insert into [sales].[targets] ([target_id],[percentage])values
+
+
+														(2,0.3),
+														(3,0.5), 
+														(4,0.6), 
+														(5,0.8);
+
+create table [sales].[commissions](
+									[staff_id] int primary key,
+									[target_id] int,
+									[base_ammount] decimal(10,2) not null default 0,
+									[commission] decimal(10,2) not null default 0,
+									foreign key([target_id]) references [sales].[targets]([target_id]),
+									);
+Insert into [sales].[commissions] ([staff_id], [base_ammount],[target_id]) values (1,100000,2), (2,120000,1),(3,80000,3),(4,900000,4),
+(5,950000,5);
+
+select * from [sales].[targets]
+select * from [sales].[commissions]
+
+update [sales].[commissions] 
+set [sales].[commissions].[commission] =c.[base_ammount] * t.[percentage]
+from [sales].[commissions] as c 
+inner join [sales].[targets] as t
+on c.target_id = t.target_id;
+
+insert into [sales].[commissions]([staff_id],[base_ammount],[target_id]) values
+																		(6,100000,null),
+																		(7,12000,null);
+
+update [sales].[commissions]
+set [sales].[commissions].[commission]=[base_ammount]*coalesce(t.[percentage],0.1)
+from [sales].[commissions] as c 
+left join [sales].[targets] as t
+on c.target_id = t.target_id;
+
+select * from [sales].commissions
+
+
+create table[HR].[product_tbl](
+								[pro_id] int primary key,
+								[pro_name] varchar(30) not null
+								)
+create table [HR].[order_tbl](
+								[o_id] int primary key,
+								[o_date] date,
+								[pro_id] int foreign key references [HR].[product_tbl]([pro_id])
+								)
+insert into [HR].[product_tbl]([pro_id],[pro_name]) values 
+															(1,'Dress'),(2,'jacket'),(3,'Shirt')
+insert into [HR].[order_tbl]([o_id],[o_date],[pro_id]) values 
+															(101,'2024/01/12',1),(102,'2024/01/23',1),(103,'2024/02/22',2)
+
+select * from [HR].[product_tbl]
+select * from [HR].[order_tbl]
+
+
+delete o from [HR].[order_tbl] as o
+left join [HR].[product_tbl] as p on p.[pro_id]=o.[pro_id]
+where o.[pro_id]=2
+
+
+--small assignment
+use PracticeDB
+
+select c.firstname,c.lastname, c.phone,o.OrderNumber,o.totalamount 
+from dbo.Customer as c
+inner join dbo.[Order] as o 
+on c.Id=o.CustomerId
+where o.[TotalAmount]>2000
+
+select firstname,city,country  
+from [dbo].[Customer] where Country=(select country from [dbo].[Customer] where firstname='rita')
+
+select s.id, s.companyname,s.Country,s.phone,p.id,p.productname 
+from [dbo].[Supplier] as s
+inner join [dbo].[Product] as p on s.[id]=p.[SupplierId]
+where p.[IsDiscontinued]=1
+
+select * from [dbo].[Product]
+
+select o.id,o.orderdate,TotalAmount from [dbo].[Order] as o
+join [dbo].OrderItem as oi on oi.[orderid]=o.[id]
+where oi.OrderId is null
+
+select c.firstname,o.OrderNumber,oi.quantity 
+from [dbo].Customer as c
+inner join [dbo].[Order] as o on c.Id=o.CustomerId
+inner join [dbo].OrderItem as oi on oi.OrderId=o.Id
+
+select o.OrderNumber,c.FirstName,count(*) as 'total'
+from [dbo].Customer as c
+inner join [dbo].[Order] as o on c.Id=o.CustomerId
+inner join [dbo].OrderItem as oi on oi.OrderId=o.Id
+group by o.OrderNumber,c.FirstName
+
+select FirstName,lastname,city 
+from [dbo].[Customer] 
+where FirstName like('%th')
+
+use BikeStores
+
+select s.store_name,s.city , p.product_name,oi.quantity 
+from [production].[products] as p
+inner join [sales].order_items as oi on p.product_id=oi.product_id
+inner join [production].stores as s on s.prod
+
+
+
+select s.first_name as staff, m.first_name as manager
+from [sales].staffs as s
+left  join [sales].staffs as m
+on s.manager_id=m.staff_id
+
+use BikeStores
+select c.category_name, cast(round(AVG(p.list_price),2)  as dec(10,2)) as avg_product_price
+from production.products as p
+inner join production.categories as c
+on p.category_id=c.category_id
+group by c.category_name
+order by c.category_name
+
+select c.category_name, cast(round(AVG(p.list_price),2)  as dec(10,2)) as avg_product_price
+from production.products as p
+inner join production.categories as c
+on p.category_id=c.category_id
+group by c.category_name
+having cast(round(AVG(p.list_price),2)  as dec(10,2)) >500
+order by c.category_name
+
+select count(*) as product_count
+from production.products
+where list_price>500
+
+select * into [bikestores].[hr].[employe]
+from [HRDB].[dbo].employees
+
+select * from [hr].[employe]
+
+select department_id,sum(salary) as total,count(department_id) as totalEmplyee
+from [BikeStores].[HR].[employe]
+group by [department_id]
+
+
+select manager_id,count(first_name)
+from HR.employe
+group by manager_id
+
+select m.first_name, count(e.employee_id) as 'totalEmp'
+from HR.employe as e
+join HR.employe as m
+on e.manager_id=m.employee_id
+group by m.first_name
+
 select customer_id,year(order_date) as order_year,count(order_id) as order_placed 
 from sales.orders 
 where customer_id in(1,2)
@@ -902,14 +1065,47 @@ group by brand_id
 
 SELECT product_name, list_price
 FROM production.products
-WHERE list_price<= ANY ( SELECT min (list_price) FROM production.products group by brand_id)order by list_priceselect customer_id, first_name, last_name,cityfrom sales.customers as c where exists(select customer_id from sales.orders as o where o.customer_id=c.customer_id and YEAR(order_date)=2017)order by first_name, last_nameSELECT [product_name], list_price, (SELECT AVG(list_price) FROM Production.products) AS Average, list_price - (SELECT
-AVG(list_price) FROM Production.products) AS DifferenceFROM Production.ProductsSELECT product_name, list_price, category_id
+WHERE list_price<= ANY ( SELECT min (list_price) FROM production.products group by brand_id)
+order by list_price
+
+select customer_id, first_name, last_name,city
+from sales.customers as c where exists(select customer_id from sales.orders as o 
+where o.customer_id=c.customer_id and YEAR(order_date)=2017)
+order by first_name, last_name
+
+SELECT [product_name], list_price, (SELECT AVG(list_price) FROM Production.products) AS Average, list_price - (SELECT
+AVG(list_price) FROM Production.products) AS Difference
+FROM Production.Products
+
+
+SELECT product_name, list_price, category_id
 FROM production.products p1
 WHERE list_price IN ( SELECT MAX (p2.list_price)
 FROM production.products p2
 WHERE p2.category_id = p1.category_id
 GROUP BY p2.category_id )
-ORDER BY category_id, product_name;use HRDBselect first_name, salary, YEAR(hire_date)from [dbo].employees as e1 where YEAR(hire_date) in ( select year(e1.hire_date)from [dbo].employees as e2where year(e2.hire_date)=year(e1.hire_date)group by year(e2.hire_date)having count(*)>2)order by year(e1.hire_date)select employee_id,first_name,salaryfrom [dbo].[employees] as e1where salary>(select AVG(e2.salary)from [dbo].[employees] as e2where e2.department_id=e1.department_id)order by salary desc
+ORDER BY category_id, product_name;
+
+use HRDB
+select first_name, salary, YEAR(hire_date)
+from [dbo].employees as e1 
+where YEAR(hire_date) in ( select year(e1.hire_date)
+from [dbo].employees as e2
+where year(e2.hire_date)=year(e1.hire_date)
+group by year(e2.hire_date)
+having count(*)>2
+)order by year(e1.hire_date)
+
+
+select employee_id,first_name,salary
+from [dbo].[employees] as e1
+where salary>(select AVG(e2.salary)
+from [dbo].[employees] as e2
+where e2.department_id=e1.department_id)
+order by salary desc
+
+
+
 
 
 --30/01/2024
@@ -1353,14 +1549,28 @@ THEN 'Late' ELSE 'OnTime'
 END shipment
 FROM sales.orders
 WHERE shipped_date IS NOT NULL
-ORDER BY required_date;
+ORDER BY required_date;
+
 
 --only specific part display from the date
 select DATEPART(MONTH,getdate()) as 'year'
 
 --the gate date function returns date and time so if we want to covert into date we use this . so it will delete the time
-SELECT CONVERT(DATE, GETDATE()) date;select CONVERT(char,GETDATE(),100)--another whay to display -- using cast SELECT CAST(GETDATE() AS DATE) as 'date';
- SELECT TRY_CAST('12.34' AS DECIMAL(4, 2)) Result -- display 12.34 no error SELECT TRY_CAST('14562.34' AS DECIMAL(4, 2)) Result -- display null because there is an error SELECT TRY_CAST(GETDATE() AS DATE) Result; SELECT ROUND(235.465, 2) AS RoundValue
+SELECT CONVERT(DATE, GETDATE()) date;
+select CONVERT(char,GETDATE(),100)
+
+--another whay to display
+ -- using cast
+ SELECT CAST(GETDATE() AS DATE) as 'date';
+
+
+ SELECT TRY_CAST('12.34' AS DECIMAL(4, 2)) Result -- display 12.34 no error
+ SELECT TRY_CAST('14562.34' AS DECIMAL(4, 2)) Result -- display null because there is an error
+
+ SELECT TRY_CAST(GETDATE() AS DATE) Result;
+
+
+ SELECT ROUND(235.465, 2) AS RoundValue
 
  SELECT ISNUMERIC('gte') result;
 
@@ -1373,14 +1583,24 @@ SELECT CONVERT(DATE, GETDATE()) date;select CONVERT(char,GETDATE(),100)--anot
  insert into [HR].employee(emp_name,dept_id) values('mm',101)
 
  SELECT value
-FROM STRING_SPLIT('I am a boy', ' ');SELECT NEWID() AS GUID;use BikeStoresSELECT * FROM (
+FROM STRING_SPLIT('I am a boy', ' ');
+
+
+SELECT NEWID() AS GUID;
+
+use BikeStores
+
+SELECT * FROM (
 SELECT product_id,product_name,brand_id,list_price, rank () OVER (
 PARTITION BY brand_id
 ORDER BY list_price DESC
 ) price_rank
 FROM production.products
 ) t
-WHERE price_rank <= 3;SELECT * FROM (
+WHERE price_rank <= 3;
+
+
+SELECT * FROM (
 SELECT product_id,product_name,brand_id,list_price, dense_rank () OVER (
 PARTITION BY brand_id
 ORDER BY list_price DESC
@@ -1393,7 +1613,8 @@ FROM production.products
 SELECT first_name, last_name, city,
 ROW_NUMBER() OVER (PARTITION BY city ORDER BY first_name ) row_num
 FROM sales.customers
-ORDER BY city;
+ORDER BY city;
+
 use studentDB
 
 
@@ -1502,7 +1723,16 @@ where order_status=1 and YEAR(order_date)=201
 SELECT order_status,COUNT(order_id) as order_count
 FROM sales.orders
 WHERE YEAR(order_date) = 2018
-GROUP BY order_status;select * from sales.ordersinsert into sales.orders(customer_id,order_status,order_date,required_date,store_id,staff_id) values(259,5,'2018-01-01','2018-01-03',2,6)insert into sales.orders(customer_id,order_status,order_date,required_date,store_id,staff_id) values(324,5,'2018-01-01','2018-01-03',2,6)SELECT
+GROUP BY order_status;
+
+select * from sales.orders
+
+insert into sales.orders(customer_id,order_status,order_date,required_date,store_id,staff_id) values
+(259,5,'2018-01-01','2018-01-03',2,6)
+insert into sales.orders(customer_id,order_status,order_date,required_date,store_id,staff_id) values
+(324,5,'2018-01-01','2018-01-03',2,6)
+
+SELECT
 CASE order_status
 	WHEN 1 THEN 'Pending'
 	WHEN 2 THEN 'Processing'
@@ -1522,21 +1752,54 @@ SELECT
 			SUM(CASE WHEN order_status = 4 THEN 1 ELSE 0 END) AS 'Completed',
 		COUNT(*) AS Total
 FROM sales.orders
-WHERE YEAR(order_date) = 2018;declare @id intset @id=0while @id<10begin	/*if @id=3	begin		continue	end*/	print @id	set @id=@id+1endCREATE TABLE SampleTable(						Id INT, 						CountryName NVARCHAR(100), 						ReadStatus TINYINT						)INSERT INTO SampleTable ( Id, CountryName, ReadStatus) Values 
+WHERE YEAR(order_date) = 2018;
+
+
+
+declare @id int
+set @id=0
+while @id<10
+begin
+
+	/*if @id=3
+	begin
+		continue
+	end*/
+
+	print @id
+	set @id=@id+1
+end
+
+
+CREATE TABLE SampleTable(
+						Id INT, 
+						CountryName NVARCHAR(100), 
+						ReadStatus TINYINT
+						)
+
+INSERT INTO SampleTable ( Id, CountryName, ReadStatus) Values 
 (1, 'Germany', 0),
 (2, 'France', 0),
 (3, 'Italy', 0),
 (4, 'Netherlands', 0) ,
 (5, 'Poland', 0)
 
-SELECT * FROM SampleTabledeclare @counter int,@maxId int, @countryName nvarchar(100)select @counter=min(id),@maxId=max(id)from SampleTableWHILE(@Counter IS NOT NULL AND @Counter <= @MaxId)
+SELECT * FROM SampleTable
+
+
+declare @counter int,@maxId int, @countryName nvarchar(100)
+select @counter=min(id),@maxId=max(id)
+from SampleTable
+WHILE(@Counter IS NOT NULL AND @Counter <= @MaxId)
 BEGIN
 	SELECT @CountryName = @CountryName
 	FROM SampleTable 
 	WHERE id = @Counter
 	PRINT CONVERT(VARCHAR,@Counter) + '. country name is ' + @CountryName
 	SET @Counter = @Counter + 1
-ENDDECLARE @Counter INT , @MaxId INT,@CountryName NVARCHAR(100)
+END
+
+DECLARE @Counter INT , @MaxId INT,@CountryName NVARCHAR(100)
 SELECT @Counter = min(Id) , @MaxId = max(Id)
 FROM SampleTable
 WHILE(@Counter IS NOT NULL
@@ -1546,9 +1809,136 @@ SELECT @CountryName = CountryName
 FROM SampleTable WHERE Id = @Counter
 PRINT CONVERT(VARCHAR,@Counter) + '. country name is ' + @CountryName
 SET @Counter = @Counter + 1
-ENDdeclare @i int= 1while @i<5 begin 	print replicate('*',@i)	set @i=@i+1enddeclare @i int= 1while @i<5 begin 	print replicate(' ',5-@i)+replicate('*',@i)	set @i=@i+1enddeclare @i int= 5while @i>0 begin 	print replicate('*',@i)	set @i=@i-1enddeclare @i int= 1while @i<5begin 	print replicate(0+@i,@i)	set @i=@i+1endcreate table bikeshop(						id int primary key identity,						bike_name varchar(50) not null,						price float						);declare @countId int=1while @countId<=10begin	insert into bikeshop values('Bike-'+CAST(@countid as varchar),@countId*500)	set @countId=@countId+1endselect * from bikeshopdeclare @start_date date ='2023/01/17'declare @end_date date='2024/01/26'declare @loop_date date=@start_datewhile @loop_date<=@end_datebegin		select @loop_date		set @loop_date=dateadd(day,1,@loop_date)enddeclare @i int =0while @i<9begin	set @i=@i+1	if @i=5		continue	print @i	endalter function fn_getAge(@dob date)returns int asbegin	declare @age int	if (month(@dob)>6)	begin		set @age=datediff(year,@dob,getdate())+1	end	else  	begin		set @age=datediff(year,@dob,getdate())	end	return @ageendselect dbo.fn_getAge('1982/12/10') as ageuse bikestores--Multi-Statement Table-Valued Functionalter function fn_udfGetEmploye()returns @Employee table(	first_name varchar(50),	last_name varchar(40),	phone varchar(20),	employee_type varchar(20)	)	as	begin		insert into @Employee 		select first_name,last_name,phone,'Manager'		from sales.customers		insert into @Employee 		select first_name,last_name,phone,'staff'		from sales.customers	return	end;select * from fn_udfGetEmploye();--one inline table valued functionuse use Exam_DB
+END
+
+
+declare @i int= 1
+while @i<5 
+begin 
+	print replicate('*',@i)
+	set @i=@i+1
+end
+
+declare @i int= 1
+while @i<5 
+begin 
+	print replicate(' ',5-@i)+replicate('*',@i)
+	set @i=@i+1
+end
+
+declare @i int= 5
+while @i>0 
+begin 
+	print replicate('*',@i)
+	set @i=@i-1
+end
+
+declare @i int= 1
+while @i<5
+begin 
+	print replicate(0+@i,@i)
+	set @i=@i+1
+end
+
+
+create table bikeshop(
+						id int primary key identity,
+						bike_name varchar(50) not null,
+						price float
+						);
+
+declare @countId int=1
+while @countId<=10
+begin
+	insert into bikeshop values('Bike-'+CAST(@countid as varchar),@countId*500)
+	set @countId=@countId+1
+end
+
+select * from bikeshop
+
+
+
+declare @start_date date ='2023/01/17'
+declare @end_date date='2024/01/26'
+
+declare @loop_date date=@start_date
+
+while @loop_date<=@end_date
+begin
+		select @loop_date
+		set @loop_date=dateadd(day,1,@loop_date)
+end
+
+
+
+declare @i int =0
+while @i<9
+begin
+	set @i=@i+1
+	if @i=5
+		continue
+	print @i
+	
+end
+
+alter function fn_getAge(@dob date)
+returns int 
+as
+begin
+	declare @age int
+	if (month(@dob)>6)
+	begin
+		set @age=datediff(year,@dob,getdate())+1
+	end
+	else  
+	begin
+		set @age=datediff(year,@dob,getdate())
+	end
+	return @age
+end
+
+select dbo.fn_getAge('1982/12/10') as age
+
+use bikestores
+--Multi-Statement Table-Valued Function
+alter function fn_udfGetEmploye()
+returns @Employee table(
+	first_name varchar(50),
+	last_name varchar(40),
+	phone varchar(20),
+	employee_type varchar(20)
+	)
+	as
+	begin
+		insert into @Employee 
+		select first_name,last_name,phone,'Manager'
+		from sales.customers
+
+		insert into @Employee 
+		select first_name,last_name,phone,'staff'
+		from sales.customers
+	return
+	end;
+
+select * from fn_udfGetEmploye();
+
+
+--one inline table valued function
+use 
+
+use Exam_DB
 select name from sysobjects 
-where xtype='U'create table mcc.customer_tbl(								cust_id int primary key,								cust_name varchar(50),								city varchar(50),								salary money,								gender char(4)								)								
+where xtype='U'
+
+create table mcc.customer_tbl(
+								cust_id int primary key,
+								cust_name varchar(50),
+								city varchar(50),
+								salary money,
+								gender char(4)
+								)
+
+								
 insert into mcc.customer_tbl (cust_id, cust_name, city, salary, gender)values
 (1, 'Subrata', 'Kolkata', 50000.00, 'Male'),
 (2, 'Subhasis', 'salt lake', 60000.00, 'Fema'),
@@ -1560,7 +1950,28 @@ insert into mcc.customer_tbl (cust_id, cust_name, city, salary, gender)values
 (8, 'Ankita', 'Krishnanagr', 58000.00, 'Fema'),
 (9, 'Sumaya', 'Amtala', 51000.00, 'Male'),
 (10, 'Sophia White', 'Denver', 59000.00, 'Fema');
-alter function fn_getCustomerbyId(@gender char(4))returns tableas return(	select cust_id, cust_name, city, salary, gender	from mcc.customer_tbl	where gender=@gender) select * from fn_getCustomerbyId('Male')create table mcc.dept_tbl(							dept_id int primary key,							dept_name varchar(30),							cust_id int,							foreign key (cust_id) references mcc.customer_tbl(cust_id)							)INSERT INTO mcc.dept_tbl (dept_id, dept_name, cust_id)
+
+alter function fn_getCustomerbyId(@gender char(4))
+returns table
+as 
+return
+(
+	select cust_id, cust_name, city, salary, gender
+	from mcc.customer_tbl
+	where gender=@gender
+) 
+select * from fn_getCustomerbyId('Male')
+
+
+
+create table mcc.dept_tbl(
+							dept_id int primary key,
+							dept_name varchar(30),
+							cust_id int,
+							foreign key (cust_id) references mcc.customer_tbl(cust_id)
+							)
+
+INSERT INTO mcc.dept_tbl (dept_id, dept_name, cust_id)
 VALUES 
     (1, 'Sales', 1),
     (2, 'Marketing', 1),
@@ -1598,12 +2009,34 @@ returns int
 as
 begin
 		return @x + @y ;
-end;select mcc.fn_addtwonumber(5,5) 'Total value';create function mcc.fn_getsalary(
+end;
+
+select mcc.fn_addtwonumber(5,5) 'Total value';
+
+
+create function mcc.fn_getsalary(
 	@salary dec(10,2)
 )
 returns int
 as
 begin
 		return @salary * 5 ;
-end;select cust_name,mcc.fn_getsalary(salary) 'Total value'from mcc.customer_tbl;
+end;
 
+select cust_name,mcc.fn_getsalary(salary) 'Total value'
+from mcc.customer_tbl;
+
+declare @i int =0,@j int=65,@s varchar(100)=''
+while @i<10
+begin 
+	while @j<=(65+@i)
+	begin
+		set @s+=char(@j)
+		set @j+=1
+	end
+	print @s
+	set @s=''
+	set @j=65
+	set @i+=1
+end
+	
