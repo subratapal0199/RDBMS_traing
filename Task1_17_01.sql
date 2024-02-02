@@ -2064,4 +2064,98 @@ FROM
 	production.products p
 	INNER JOIN production.categories c
 	ON c.category_id = p.category_id
-GROUP BY category_name;select [Children Bicycles],		[Comfort Bicycles],		[Cruisers Bicycles],		[Cyclocross Bicycles],		[Electric Bikes],		[Mountain Bikes],		[Road Bikes]from(	select c.category_name,p.product_id	from production.products as p	join production.categories as c	on c.category_id=p.category_id) as pivotdatapivot( count(product_id) for category_name	in ([Children Bicycles],		[Comfort Bicycles],		[Cruisers Bicycles],		[Cyclocross Bicycles],		[Electric Bikes],		[Mountain Bikes],		[Road Bikes]))as pivottable-------------------------------------------------------------------------------------------------------declare @columnnames nvarchar(max)='';select @columnnames +=QUOTENAME(category_name)+','from production.categoriesset @columnnames=left(@columnnames,len(@columnnames)-1);create function hr.fn_xyz()returns nvarchar(max)asbegindeclare @columnnames nvarchar(max)='';select @columnnames +=QUOTENAME(category_name)+','from production.categoriesset @columnnames=left(@columnnames,len(@columnnames)-1)return @columnnamesendselect  hr.fn_xyz() 	select @columnnamesfrom(	select c.category_name,p.product_id	from production.products as p	join production.categories as c	on c.category_id=p.category_id) as pivotdatapivot( count(product_id) for category_name	in (@columnnames))as pivottable
+GROUP BY category_name;select [Children Bicycles],		[Comfort Bicycles],		[Cruisers Bicycles],		[Cyclocross Bicycles],		[Electric Bikes],		[Mountain Bikes],		[Road Bikes]from(	select c.category_name,p.product_id	from production.products as p	join production.categories as c	on c.category_id=p.category_id) as pivotdatapivot( count(product_id) for category_name	in ([Children Bicycles],		[Comfort Bicycles],		[Cruisers Bicycles],		[Cyclocross Bicycles],		[Electric Bikes],		[Mountain Bikes],		[Road Bikes]))as pivottable-------------------------------------------------------------------------------------------------------declare @columnnames nvarchar(max)='';select @columnnames +=QUOTENAME(category_name)+','from production.categoriesset @columnnames=left(@columnnames,len(@columnnames)-1);create function hr.fn_xyz()returns nvarchar(max)asbegindeclare @columnnames nvarchar(max)='';select @columnnames +=QUOTENAME(category_name)+','from production.categoriesset @columnnames=left(@columnnames,len(@columnnames)-1)return @columnnamesendselect  hr.fn_xyz() 	select @columnnamesfrom(	select c.category_name,p.product_id	from production.products as p	join production.categories as c	on c.category_id=p.category_id) as pivotdatapivot( count(product_id) for category_name	in (@columnnames))as pivottable-----------------------------------------------------------------unpivotCreate Table ProductSales
+(
+	AgentName VARCHAR(50),
+	India int,
+	US int,
+	UK int,
+	phone_number char(10)
+)INSERT INTO ProductSales VALUES ('Smith', 9160, 5220, 3360,'7098375')
+INSERT INTO ProductSales VALUES ('David', 9770, 5440, 8800,'8764356')
+INSERT INTO ProductSales VALUES ('James', 9870, 5480, 8900,'6738290')INSERT INTO ProductSales VALUES ('David', 8759, 8873, 8800,'8764356')
+INSERT INTO ProductSales VALUES ('James', 9889, 5445, 8900,'6738290')select * from ProductSalesselect agentname,		country,		salesamount,		phone_numberfrom ( select agentname,india,us,uk,phone_number		from ProductSales		) as actualdataunpivot(	salesamount for country	in(india,us,uk))as unpvtdata--------------------------------------------------------------------------------WAQ to display total sales amount for each employee in wach product type from each month--table description- emp_id,emp_name,product_type,sales_amount,sales_dateuse studentDBcreate schema [pio];drop table [pio].[employee_tbl]create table [pio].[employee_tbl](									[emp_id] int,									[emp_name] varchar(30),									[pro_type] varchar(40),									[sales_amount] dec(10,2),									[sales_date] date									)insert into [pio].[employee_tbl] ([emp_id], [emp_name], [pro_type], [sales_amount], [sales_date])values
+    (1, 'Subrata', 'Electronic', 1000.50, '2024-01-01'),
+    (2, 'Rahul', 'sports', 750.25, '2024-03-02'),
+    (1, 'Subrata', 'Electronic', 1200.75, '2024-01-03'),
+    (4, 'Krishna', 'The Think Tank', 900.30, '2024-02-04'),
+    (5, 'Swapnasish', 'clothing', 1100.60, '2024-03-05'),
+    (6, 'pupai', 'Hi-Tech Haven', 850.45, '2024-01-06'),
+    (7, 'sayan', 'Glamour', 950.20, '2023-01-07'),
+    (8, 'Pranav', 'Hi-Tech Haven', 1150.70, '2022-01-08'),
+    (9, 'Rahul', 'Makeup Masters', 800.35, '2024-02-09'),
+    (10, 'Pyush', 'Cosmetic Cosmetic', 1050.40, '2024-01-10');
+
+
+select * from pio.employee_tbl
+
+select	*
+from (select emp_id,emp_name,pro_type,sales_amount,format(sales_date,'MMMM') as m
+		from pio.employee_tbl
+		) as pivotdata
+pivot(
+	sum(sales_amount) for m
+	in(january,february,march)
+	)as pivottable
+-----------------------------------------------------------------
+create table [pio].[employee_tbl_2](									[emp_id] int primary key,									[emp_name] varchar(30),									[pro_type] varchar(40),									[sales_amount] dec(10,2),									[sales_date] varchar(10)									)insert into [pio].[employee_tbl_2] ([emp_id], [emp_name], [pro_type], [sales_amount], [sales_date])values
+    (1, 'Subrata', 'Electornic', 1000.50, 'january'),
+    (2, 'Rahul', 'sports', 750.25, 'march'),
+    (3, 'Sumyana', 'Electronic', 1200.75, 'january'),
+    (4, 'Krishna', 'The Think Tank', 900.30, 'february'),
+    (5, 'Swapnasish', 'clothing', 1100.60, 'january'),
+    (6, 'pupai', 'Hi-Tech Haven', 850.45, 'march'),
+    (7, 'sayan', 'Glamour', 950.20, 'february'),
+    (8, 'Pranav', 'Hi-Tech Haven', 1150.70, 'march'),
+    (9, 'Rahul', 'Makeup Masters', 800.35, 'february'),
+    (10, 'Pyush', 'Cosmetic Cosmetic', 1050.40, 'january');
+
+
+select * from pio.employee_tbl_2
+
+select	emp_name,
+		january,
+		february,
+		march
+from (select emp_id,emp_name,pro_type,sales_amount,sales_date 
+		from pio.employee_tbl_2
+		) as pivotdata
+pivot(
+	sum(sales_amount) for sales_date
+	in(january,february,march)
+	)as pivottable
+
+-----------------------------------------------------------------------------------
+--WAQ to display total quantity of products ordered for each product category over quantitys 
+--table like- order_id, category, producttype,order_date
+create table [pio].[order_tbl](
+								[order_id] int,
+								[category_type] varchar(30),
+								[quantity] int,
+								[order_date] date
+								)
+drop table [pio].[order_tbl]
+
+INSERT INTO [pio].[order_tbl] ([order_id], [category_type], [quantity], [order_date])
+VALUES
+    (101, 'Electronics', 50, '2024-01-01'),
+    (102, 'Toys', 30, '2024-03-02'),
+    (101, 'Electronics', 20, '2024-01-03'),
+    (104, 'Furniture', 40, '2024-09-04'),
+    (102, 'Toys', 25, '2024-12-05');
+
+select * from pio.order_tbl
+
+select	*
+from 
+	(
+		select order_id,category_type,quantity,concat('Q',datepart(QUARTER,[order_date]),'-',YEAR([order_date])) as odr_date
+		from pio.order_tbl
+	 ) as pivotdata
+pivot
+(
+	COUNT(quantity) for odr_date in ([Q1-2024],[Q2-2024],[Q3-2024],[Q4-2024])
+)as pivottable
+
+
+
