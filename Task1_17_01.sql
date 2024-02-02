@@ -2039,4 +2039,29 @@ begin
 	set @j=65
 	set @i+=1
 end
-	
+-------------------------------------------------------------------	
+--02/02/2024 pivot lecture
+use studentDB
+
+CREATE TABLE Customers
+(
+CustomerName VARCHAR(50),
+ProductName VARCHAR(50),
+Amount INT,
+Laptop_date date
+)INSERT INTO Customers VALUES('James', 'Laptop', 30000,'2023/02/03')
+INSERT INTO Customers VALUES('James', 'Desktop', 25000,'2023/09/03')
+INSERT INTO Customers VALUES('David', 'Laptop', 25000,'2022/02/03')
+INSERT INTO Customers VALUES('Smith', 'Desktop', 30000,'2024/02/03')
+INSERT INTO Customers VALUES('Pam', 'Laptop', 45000,'2023/04/03')
+INSERT INTO Customers VALUES('Pam', 'Laptop', 30000,'2023/06/06')
+INSERT INTO Customers VALUES('John', 'Desktop', 30000,'2023/07/06')
+INSERT INTO Customers VALUES('John', 'Desktop', 30000,'2023/04/04')
+INSERT INTO Customers VALUES('John', 'Laptop', 30000,'2023/08/03')INSERT INTO Customers VALUES('John', 'Mobile', 30000,'2023/08/03')INSERT INTO Customers VALUES('John', 'Mobile', 30000,'2023/08/03')select * from Customersselect customerName,		Laptop,		Desktop,		Mobilefrom (select customerName,		productname,		amount	from		Customers)as piviotdatapivot( sum(amount) for productname	in (laptop,desktop,mobile)) as privottable-----------------------------------------------------------------------use BikeStoresSELECT
+	category_name,
+	COUNT(product_id) product_count
+FROM
+	production.products p
+	INNER JOIN production.categories c
+	ON c.category_id = p.category_id
+GROUP BY category_name;select [Children Bicycles],		[Comfort Bicycles],		[Cruisers Bicycles],		[Cyclocross Bicycles],		[Electric Bikes],		[Mountain Bikes],		[Road Bikes]from(	select c.category_name,p.product_id	from production.products as p	join production.categories as c	on c.category_id=p.category_id) as pivotdatapivot( count(product_id) for category_name	in ([Children Bicycles],		[Comfort Bicycles],		[Cruisers Bicycles],		[Cyclocross Bicycles],		[Electric Bikes],		[Mountain Bikes],		[Road Bikes]))as pivottable-------------------------------------------------------------------------------------------------------declare @columnnames nvarchar(max)='';select @columnnames +=QUOTENAME(category_name)+','from production.categoriesset @columnnames=left(@columnnames,len(@columnnames)-1);create function hr.fn_xyz()returns nvarchar(max)asbegindeclare @columnnames nvarchar(max)='';select @columnnames +=QUOTENAME(category_name)+','from production.categoriesset @columnnames=left(@columnnames,len(@columnnames)-1)return @columnnamesendselect  hr.fn_xyz() 	select @columnnamesfrom(	select c.category_name,p.product_id	from production.products as p	join production.categories as c	on c.category_id=p.category_id) as pivotdatapivot( count(product_id) for category_name	in (@columnnames))as pivottable
