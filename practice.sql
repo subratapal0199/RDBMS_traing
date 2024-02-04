@@ -936,5 +936,37 @@ join
 join
 	mc.Courses_tbl as c on c.CourseID=e.CourseID
 ---------------------------------------------------------------------------------------
+--Using case: categorize the bookings based on the age of the passengers and whether they have special concessions.  
+--Assuming you have a table TrainBookings having columns with BookingID, Passenger Name, Age and Concession.
 
+CREATE TABLE mc.TrainBookings_tbl (
+							BookingID INT PRIMARY KEY,
+							PassengerName VARCHAR(255),
+							Age tinyint,
+							Concession VARCHAR(3)
+							);
+
+INSERT INTO mc.TrainBookings_tbl (BookingID, PassengerName, Age, Concession)
+VALUES
+    (1, 'Rahul', 25, 'No'),
+    (2, 'Priya', 17, 'Yes'),
+    (3, 'Sandeep', 60, 'Yes'),
+    (4, 'Anita', 45, 'No'),
+    (5, 'Kiran', 28, 'No'),
+    (6, 'Deepika', 70, 'Yes'),
+    (7, 'Amit', 15, 'Yes'),
+    (8, 'Sonia', 50, 'No');
+
+select BookingID,PassengerName,Age,Concession,
+    case
+        when Age < 18 then 'Child'
+        when Age >= 18 and Age <= 60 and Concession = 'Yes' then 'Adult with Concession'
+        when Age >= 18 and Age <= 60 then 'Adult'
+        when Age > 60 then 'Senior Citizen'
+        else 'Unknown'
+    end as PassengerCategory
+from
+	 mc.TrainBookings_tbl
+
+---------------------------------------------------------------------------------
     
