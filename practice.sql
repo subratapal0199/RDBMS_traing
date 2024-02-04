@@ -807,4 +807,48 @@ from
 									) 'rank'
 				from mc.employee_tbl
 		)t
+-----------------------------------------------------------------------
+--Using Case : Calculates a bonus for employees based on their salary. 
+--Condition 1. salary >6000 then bonus 0.1, 2. salary between 45000 and 59999 then bonus 0.65 otherwise 0.
+use Subrata_DB
+select
+    emp_id,
+    emp_name,
+    salary,
+    case
+        when salary > 60000 THEN cast(ROUND(salary * 0.1, 2) as dec(10,2))
+        when salary BETWEEN 45000 AND 59999 THEN cast(ROUND(salary * 0.65, 2) as dec(10,2))
+        ELSE 0
+    END AS bonus
+FROM
+    mc.employee_tbl
+
+--using scaller functuion
+create function mc.fn_cal_bonus(@salary money)
+returns dec(10,2)
+as 
+	begin
+		declare @bonus dec(10,2)
+		set @bonus=
+			case
+				when @salary > 60000 THEN cast(ROUND(@salary * 0.1, 2) as dec(10,2))
+				when @salary BETWEEN 45000 AND 59999 THEN cast(ROUND(@salary * 0.65, 2) as dec(10,2))
+				ELSE 0
+			END
+		return @bonus
+	end 
+select emp_id,emp_name,salary,mc.fn_cal_bonus(salary)
+from mc.employee_tbl
+--------------------------------------------------------------------------------------------------
+--Using Case : calculate the final price of a product based on availability and apply discounts accordingly. 
+--Assuming a Products table with columns ProductID, ProductName, Price, StockQuantity, and DiscountPercentage.
+select * from mc.Product_tbl
+select pro_id,pro_name,price,
+		case	
+			when StockQuantity>0 then cast(round(price-(Price*DiscountPercentage/100),2) as dec(10,2))
+			when StockQuantity=0 then 'out of stock'
+		end as 'After_discount'
+from mc.Product_tbl
+----------------------------------------------------------------------------------------------------
+--Using case: display customers as "Gold," "Silver," or "Bronze" based on their total ordered price from BikeStores database.
 
