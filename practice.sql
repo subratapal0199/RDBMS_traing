@@ -717,8 +717,8 @@ SELECT
         WHEN TotalMarks >= 400 THEN 'A+'
         WHEN TotalMarks >= 350 AND TotalMarks < 400 THEN 'A'
         WHEN TotalMarks >= 300 AND TotalMarks < 350 THEN 'B'
-        WHEN TotalMarks >= 60 AND TotalMarks < 70 THEN 'C'
-        WHEN TotalMarks >= 50 AND TotalMarks < 60 THEN 'D'
+        WHEN TotalMarks >= 250 AND TotalMarks < 300 THEN 'C'
+        WHEN TotalMarks >= 200 AND TotalMarks < 250 THEN 'D'
         ELSE 'F'
     END as 'Grade'
 FROM (
@@ -731,4 +731,80 @@ FROM (
 			from 
 				mc.student_tbl
 		) as totalmarksdetails
-     
+------------------------------------------------------------------------------------     
+--Using Case : Calculates a bonus for employees based on their salary. 
+--Condition 1. salary >6000 then bonus 0.1, 2. salary between 45000 and 59999 then bonus 0.65 otherwise 0.
+select * from mc.employee_tbl
+
+select emp_id,emp_name,city,salary,
+		case
+			when salary>60000 then cast(round(salary*0.1,2) as dec(20,2))
+			when salary between 45000 and 59999 then cast(round(salary*0.65,2) as dec(20,2))
+			else 0
+		end as Bonus
+from mc.employee_tbl
+
+--using scaler function
+EXEC sp_help 'mc.employee_tbl'
+
+create function mc.fn_calcu_bonus(@salary money)
+returns decimal(10,2)
+as 
+begin
+	declare @bonus decimal(10,2)
+	set @bonus=
+				case
+					when @salary>60000 then cast(round(@salary*0.1,2) as dec(20,2))
+					when @salary between 45000 and 59999 then cast(round(@salary*0.65,2) as dec(20,2))
+					else 0
+				end
+	return @bonus
+end;
+
+select *, mc.fn_calcu_bonus(salary)
+from mc.employee_tbl
+
+-----------------------------------------------------------------------------------
+--Using Case : calculate the final price of a product based on availability and apply discounts accordingly. 
+--Assuming a Products table with columns ProductID, ProductName, Price, StockQuantity, and DiscountPercentage.
+--drop table mc.Product_tbl
+CREATE TABLE mc.Product_tbl(
+							Pro_ID INT PRIMARY KEY,
+							Pro_Name VARCHAR(50),
+							Price DECIMAL(10, 2),
+							StockQuantity INT,
+							DiscountPercentage INT
+							);
+
+INSERT INTO mc.Product_tbl(Pro_ID, Pro_Name, Price, StockQuantity, DiscountPercentage)
+VALUES
+    (1, 'Laptop', 1000.00, 20, 10),
+    (2, 'Smartphone', 500.00, null, 5),
+    (3, 'Headphones', 50.00, 30, 15),
+    (4, 'Tablet', 300.00, 10, 8),
+    (5, 'Printer', 150.00, null, 12),
+    (6, 'Camera', 800.00, 5, 20),
+    (7, 'Monitor', 200.00, 18, 10),
+    (8, 'Keyboard', 30.00, 40, 5);
+
+select Pro_ID,Pro_Name,Price,StockQuantity,DiscountPercentage,
+		case	
+			when StockQuantity>0
+				then 
+					cast(ROUND(price-(price*discountpercentage/100),2) as decimal(10,2))
+			else 0
+		end as 'After_discount'
+from mc.Product_tbl
+------------------------------------------------------------------------------------------
+--Rank()
+select * from mc.employee_tbl
+
+select * 
+from 
+	(select emp_name,city,row_number() over(
+									partition by dept_id
+									order by city asc
+									) 'rank'
+				from mc.employee_tbl
+		)t
+
