@@ -851,4 +851,90 @@ select pro_id,pro_name,price,
 from mc.Product_tbl
 ----------------------------------------------------------------------------------------------------
 --Using case: display customers as "Gold," "Silver," or "Bronze" based on their total ordered price from BikeStores database.
+use Bikestores
+select c.customer_id,c.first_name,o.order_id,
+		sum(oi.quantity*oi.list_price) as 'total_price',
+		case
+			when sum(oi.quantity*oi.list_price)>1000 then 'Gold'
+			when sum(oi.quantity*oi.list_price)>500 then 'Silver'
+			else 'Bronze'
+		end as category
+from sales.customers as c
+join sales.orders as o on c.customer_id=o.customer_id
+join sales.order_items as oi on oi.order_id=o.order_id
+group by c.customer_id,c.first_name,o.order_id
+---------------------------------------------------------------------------------------------
+--Student Table : Students with StudentID, StudentName, Age and Gender
+use Subrata_DB
+select * from mc.student_tbl
+alter table mc.student_tbl add student_name	varchar(30),age tinyint,gender char(1)
 
+UPDATE mc.student_tbl
+SET student_name = 'Avik', age = 23, gender = 'F'
+WHERE StudentID = 1;
+
+UPDATE mc.student_tbl
+SET student_name = 'Subrata', age = 24, gender = 'M'
+WHERE StudentID = 1;
+
+INSERT INTO mc.student_tbl (StudentID, subject1marks, subject2marks, subject3marks, student_name, age, gender)
+VALUES
+    (1, 85, 90, 88, 'Rahul', 21, 'M'),
+    (2, 78, 92, 87, 'Priya', 22, 'F'),
+    (3, 95, 89, 91, 'Sandeep', 20, 'M'),
+    (4, 68, 73, 79, 'Anita', 23, 'F'),
+    (5, 82, 94, 88, 'Kiran', 21, 'M'),
+   (6, 76, 85, 80, 'Deepika', 22, 'F');
+
+select * from mc.student_tbl
+
+--Course Table : Courses CourseID, CourseName, Department and Credits
+CREATE TABLE mc.Courses_tbl (
+							CourseID INT PRIMARY KEY,
+							CourseName VARCHAR(255),
+							 Department VARCHAR(50),
+							Credits INT
+						);
+INSERT INTO mc.Courses_tbl (CourseID, CourseName, Department, Credits)
+VALUES
+    (1, 'Mathematics', 'Math', 3),
+    (2, 'Computer Science', 'Computer Science', 4),
+    (3, 'Physics', 'Science', 3),
+    (4, 'English Literature', 'Humanities', 3),
+    (5, 'History', 'Social Science', 3),
+    (6, 'Chemistry', 'Science', 4),
+    (7, 'Economics', 'Social Science', 3),
+    (8, 'Art', 'Fine Arts', 2);
+select * from mc.Courses_tbl
+
+--Enrollment Table : Enrollments with EnrollmentID , StudentID, CourseID, Grade , foreign keys StudentID and CourseID.
+CREATE TABLE  mc.Enrollments_tbl(
+							EnrollmentID INT PRIMARY KEY,
+							StudentID INT,
+							CourseID INT,
+							Grade VARCHAR(2),  -- Assuming the grades are represented as A+, A, B+, B, C+, C, D
+							FOREIGN KEY (StudentID) REFERENCES mc.student_tbl(StudentID),
+							FOREIGN KEY (CourseID) REFERENCES mc.Courses_tbl(CourseID)
+						);
+
+select * from mc.Enrollments_tbl
+
+--Using case : Write a query that includes a column indicating whether 
+--a student has grade as 'Excellent,' 'Good,' 'Satisfactory,' or 'Needs Improvement'.
+select s.StudentID,s.student_name,e.Grade,
+    case
+        when Grade = 'A+' OR Grade = 'A' then 'Excellent'
+        when Grade = 'B+' OR Grade = 'B' then 'Good'
+        when Grade = 'C+' OR Grade = 'C' then 'Satisfactory'
+        when Grade = 'D' then 'Needs Improvement'
+        else 'Unknown'  
+    end as GradeCategory
+from
+	mc.student_tbl as s 
+join
+	mc.Enrollments_tbl as e on s.StudentID=e.StudentID
+join
+	mc.Courses_tbl as c on c.CourseID=e.CourseID
+---------------------------------------------------------------------------------------
+
+    
