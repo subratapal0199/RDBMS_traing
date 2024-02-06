@@ -2158,6 +2158,64 @@ pivot
 )as pivottable
 
 ------------------------------------------------------------------------------------------
+--o6/02/2024
+-- if else  and try catch
+ 
+declare @n int =5
+declare @temp int
+begin try
+	set @temp=@n/0
+end try
+begin catch
+	
+end catch
+
+drop proc spdivide
+
+CREATE PROC spdivide(
+@a decimal,
+@b decimal,
+@c decimal output
+) AS
+BEGIN
+BEGIN TRY
+	--declare @message varchar(40)='Division'
+	SET @c = @a / @b;
+	--print concat(@message,@c)
+END TRY
+BEGIN CATCH
+SELECT
+	ERROR_NUMBER() AS ErrorNumber,	
+	ERROR_SEVERITY() AS ErrorSeverity,
+	ERROR_STATE() AS ErrorState,
+	ERROR_PROCEDURE() AS ErrorProcedure,
+	ERROR_LINE() AS ErrorLine,
+	ERROR_MESSAGE() AS ErrorMessage;
+END CATCH
+END; 
+
+declare @a decimal=10,@b decimal =3,@c decimal
+exec spdivide @a,@b,@c output
+print concat('Div=', @c)
+
+----suppose i wnat to show the message inside the spdivide
 
 
+use studentDB
 
+CREATE TABLE sales.persons (
+							person_id INT PRIMARY KEY IDENTITY, 
+							first_name NVARCHAR(100) NOT NULL, 
+							last_nam NVARCHAR(100) NOT NULL							);INSERT INTO sales.persons (first_name, last_nam) VALUES 
+('John', 'Doe'),
+('Jane', 'Smith'),
+('Michael', 'Johnson'),
+('Emily', 'Brown'),
+('Christopher', 'Davis');CREATE TABLE sales.deals(
+						deal_id INT PRIMARY KEY IDENTITY, 
+						person_id INT NOT NULL, 
+						deal_note NVARCHAR(100), 						FOREIGN KEY(person_id) REFERENCES sales.persons( person_id)						);INSERT INTO sales.deals (person_id, deal_note) VALUES 
+(1, 'Deal for john doe'),
+(2, 'Deal Jane'),
+(3, 'Michael'),
+(4, 'Deal for Emily');select * from sales.personsselect * from sales.dealsdrop proc sp_delect_persondrop proc sp_reportcreate proc sp_reportas	select ERROR_NUMBER() as errorNumber,		   ERROR_LINE() as errorLine,		   ERROR_MESSAGE() as errorMessage,		   ERROR_SEVERITY() as errorServerity,		   ERROR_PROCEDURE() as errorProcedure,		   ERROR_STATE() as errorStatealter proc sp_delect_person(@person_id int,@message varchar(40)out)asbegin	begin try		begin transaction 				delete from sales.persons where person_id=@person_id				set @message='Transaction successfull'				commit transaction				end try				begin catch							exec sp_report;							if(XACT_STATE())=-1							begin								print N'The transactions is an uncommitable state.' + 'Rollback the transaction'								commit transaction								set @message='Transaction fail for uncommitable state'							end							if(XACT_STATE())=1							begin								print N'The transactions is a commitable state.' + 'commiting transaction'								rollback transaction								set @message='Transaction fail'							end				end catch			enddeclare @message varchar(100)exec sp_delect_person 2,@message outprint @messagedeclare 		@errorMessage nvarchar(100),		@errorSeverity int,		@errorState int		begin try				raiserror('whoops an error ocoure',17,2);		end try		begin catch			select 				@errorMessage=error_message(),				@errorSeverity=error_severity(),				@errorState=error_state();				raiserror(@errorMessage,@errorSeverity,@errorState);		end catch--Transactioncreate table Bank_account_tbl(							acc_no int primary key,							balance money							)--insert initial datainsert into Bank_account_tbl(acc_no,balance) values(1,500),(2,600),(3,700)--read uncommited data--Transaction t1: Fund transfer from account A to account Bbegin transaction--deduct 100 from account Aupdate Bank_account_tbl set balance=balance-100where acc_no=1;--simulate a delay or some processingwaitfor delay '00:00:05';    --simulating some processsing time--transaction T2: Quary balance of account B with read uncommitedset transaction isolation level read uncommitted--read the balance of account B ( may read uncommitted data)select balancefrom Bank_account_tblwhere acc_no=1--commit or rollback transction T1rollback--read uncommited data--Transaction t1: Fund transfer from account A to account Bbegin transaction--deduct 100 from account Aupdate Bank_account_tbl set balance=balance-100where acc_no=1;--simulate a delay or some processingwaitfor delay '00:00:05';    --simulating some processsing time--transaction T2: Quary balance of account B with read uncommitedset transaction isolation level read uncommitted--read the balance of account B ( may read uncommitted data)update Bank_account_tblset balance=balance+100where acc_no=2--commit or rollback transction T1commitselect * from Bank_account_tbl--comitted--read uncommited data--Transaction t1: Fund transfer from account A to account Bbegin transaction--deduct 100 from account Aupdate Bank_account_tbl set balance=balance-100where acc_no=2;--simulate a delay or some processingwaitfor delay '00:00:05';    --simulating some processsing time--transaction T2: Quary balance of account B with read uncommitedset transaction isolation level read committedselect * from Bank_account_tblupdate Bank_account_tblset balance=balance+100where acc_no=1--read the balance of account B ( may read uncommitted data)--commit or rollback transction T1commitselect * from Bank_account_tbl
