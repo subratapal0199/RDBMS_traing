@@ -254,14 +254,15 @@ having
 
 
 
-select s.[std_id],s.[std_name],c.[Course_ID],c.[Course_Name]
+select s.[std_id],s.[std_name],count(c.[Course_ID])
 from 
 	[mcc].[Student_tbl] as s
 join [mcc].[Enrollments_tbl] as e 
 		on s.[std_id]=e.[Student_ID]
 join [mcc].[Courses_tbl] as c
 		on e.[Course_ID]=c.Course_ID
-where c.Course_ID>1
+group by s.[std_id],s.[std_name]
+having count(e.Course_ID)>2
 -------------------------------------------------------------------------------------------
 --9.Retrieve information about each book along with its author, publisher, and genre details. 3
 create table [mcc].[author_tbl](
