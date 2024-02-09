@@ -2218,4 +2218,490 @@ CREATE TABLE sales.persons (
 (1, 'Deal for john doe'),
 (2, 'Deal Jane'),
 (3, 'Michael'),
-(4, 'Deal for Emily');select * from sales.personsselect * from sales.dealsdrop proc sp_delect_persondrop proc sp_reportcreate proc sp_reportas	select ERROR_NUMBER() as errorNumber,		   ERROR_LINE() as errorLine,		   ERROR_MESSAGE() as errorMessage,		   ERROR_SEVERITY() as errorServerity,		   ERROR_PROCEDURE() as errorProcedure,		   ERROR_STATE() as errorStatealter proc sp_delect_person(@person_id int,@message varchar(40)out)asbegin	begin try		begin transaction 				delete from sales.persons where person_id=@person_id				set @message='Transaction successfull'				commit transaction				end try				begin catch							exec sp_report;							if(XACT_STATE())=-1							begin								print N'The transactions is an uncommitable state.' + 'Rollback the transaction'								commit transaction								set @message='Transaction fail for uncommitable state'							end							if(XACT_STATE())=1							begin								print N'The transactions is a commitable state.' + 'commiting transaction'								rollback transaction								set @message='Transaction fail'							end				end catch			enddeclare @message varchar(100)exec sp_delect_person 2,@message outprint @messagedeclare 		@errorMessage nvarchar(100),		@errorSeverity int,		@errorState int		begin try				raiserror('whoops an error ocoure',17,2);		end try		begin catch			select 				@errorMessage=error_message(),				@errorSeverity=error_severity(),				@errorState=error_state();				raiserror(@errorMessage,@errorSeverity,@errorState);		end catch--Transactioncreate table Bank_account_tbl(							acc_no int primary key,							balance money							)--insert initial datainsert into Bank_account_tbl(acc_no,balance) values(1,500),(2,600),(3,700)--read uncommited data--Transaction t1: Fund transfer from account A to account Bbegin transaction--deduct 100 from account Aupdate Bank_account_tbl set balance=balance-100where acc_no=1;--simulate a delay or some processingwaitfor delay '00:00:05';    --simulating some processsing time--transaction T2: Quary balance of account B with read uncommitedset transaction isolation level read uncommitted--read the balance of account B ( may read uncommitted data)select balancefrom Bank_account_tblwhere acc_no=1--commit or rollback transction T1rollback--read uncommited data--Transaction t1: Fund transfer from account A to account Bbegin transaction--deduct 100 from account Aupdate Bank_account_tbl set balance=balance-100where acc_no=1;--simulate a delay or some processingwaitfor delay '00:00:05';    --simulating some processsing time--transaction T2: Quary balance of account B with read uncommitedset transaction isolation level read uncommitted--read the balance of account B ( may read uncommitted data)update Bank_account_tblset balance=balance+100where acc_no=2--commit or rollback transction T1commitselect * from Bank_account_tbl--comitted--read uncommited data--Transaction t1: Fund transfer from account A to account Bbegin transaction--deduct 100 from account Aupdate Bank_account_tbl set balance=balance-100where acc_no=2;--simulate a delay or some processingwaitfor delay '00:00:05';    --simulating some processsing time--transaction T2: Quary balance of account B with read uncommitedset transaction isolation level read committedselect * from Bank_account_tblupdate Bank_account_tblset balance=balance+100where acc_no=1--read the balance of account B ( may read uncommitted data)--commit or rollback transction T1commitselect * from Bank_account_tbl-----------------------------------------------------------------------------------------07/02/2024use studentDBselect * from [HR].emp_tblinsert into [HR].emp_tbl (emp_name,gender,address,salary,doj,dept_id)values('pranav','M','Howrah',40000,'2024-01-18',102)begin transaction mytranupdate [HR].emp_tbl set salary=31000 where emp_id=201save tran update_to_point_201update [HR].emp_tbl set salary=25000 where emp_id=202save tran update_to_point_202delete from [HR].emp_tbl where emp_id=205rollback tran update_to_point_201commitupdate [HR].emp_tbl set salary=25000 where emp_id=201save tran update_to_point_201 print XACT_STATE()  create table [hr].[dept_tbl_1](							dept_id int primary key,							dept_name varchar(30),							emp_id int, 							constraint dept_tbl_fk foreign key(emp_id) references  [HR].emp_tbl(emp_id)							)insert into [hr].[dept_tbl_1] values(101,'IT',201),(102,'Accounts',203)select * from [hr].[dept_tbl_1] begin transaction mytrandelete from [HR].emp_tbl where emp_id=101 save tran update_to_point_201update [HR].emp_tbl set salary=25000 where emp_id=202save tran update_to_point_202delete from [HR].emp_tbl where emp_id=205rollback tran update_to_point_201rollbackselect * from hr.emp_tbl print XACT_STATE() set IMPLICIT_TRANSACTIONS onupdate [HR].emp_tbl set salary=45000 where emp_id=201save tran update_to_point_201update [HR].emp_tbl set salary=25000 where emp_id=202save tran update_to_point_202delete from [HR].emp_tbl where emp_id=205rollback tran update_to_point_201select * from [HR].emp_tbluse BikeStores----------------------------------------------------------------------------------------------------------create a procedure define one parameter that will take an input as model year and count the the number of product placed -- in this model yearalter proc usp_modelyr(@modelyr int,@mess varchar(50) out)as begin						select p.model_year,count(o.order_id) as total_count			from sales.order_items as oi			join production.products as p on p.product_id=oi.product_id			join sales.orders as o on oi.order_id =o.order_id			where p.model_year=@modelyr			group by p.model_year			if(@@ROWCOUNT<=0)			begin					set @mess='No order placed in this year'			endend declare @mess varchar(50)exec usp_modelyr 2019, @mess outprint @mess--create a procedure to display empuse HRDBcreate proc usp_MinMaxSal(@min_salary dec,@max_salary dec)as begin 	select e.first_name,e.hire_date,e.salary,j.job_title	from dbo.employees as e	join dbo.jobs as j on e.job_id=j.job_id	where e.salary between @min_salary and @max_salary endexec usp_MinMaxSal 8000,20000use BikeStoresalter proc usp_orderDate(@startdate date,@endDate date,@productName varchar(50),@mess varchar(100) out,@row_cont int out)asbegin		--set nocount on		select b.brand_name,p.product_name,p.list_price		from production.brands as b		join production.products as p on b.brand_id=p.brand_id		join sales.order_items as oi on oi.product_id=p.product_id		join sales.orders as o on oi.order_id=o.order_id		where o.order_date between @startdate and @endDate and 		p.product_name like '%'+@productName+'%'		set @row_cont=@@ROWCOUNT		if(@@ROWCOUNT<=0)				set @mess='No order between this date'		enddeclare @mess varchar(100),@row_cont intexec usp_orderDate '2016-01-05','2016-01-20','remedy',@mess out,@row_cont outprint @messprint @row_contprint concat('Row count= ',@row_cont)print 'asd'+char(10)
+(4, 'Deal for Emily');select * from sales.personsselect * from sales.dealsdrop proc sp_delect_persondrop proc sp_reportcreate proc sp_reportas	select ERROR_NUMBER() as errorNumber,		   ERROR_LINE() as errorLine,		   ERROR_MESSAGE() as errorMessage,		   ERROR_SEVERITY() as errorServerity,		   ERROR_PROCEDURE() as errorProcedure,		   ERROR_STATE() as errorStatealter proc sp_delect_person(@person_id int,@message varchar(40)out)asbegin	begin try		begin transaction 				delete from sales.persons where person_id=@person_id				set @message='Transaction successfull'				commit transaction				end try				begin catch							exec sp_report;							if(XACT_STATE())=-1							begin								print N'The transactions is an uncommitable state.' + 'Rollback the transaction'								commit transaction								set @message='Transaction fail for uncommitable state'							end							if(XACT_STATE())=1							begin								print N'The transactions is a commitable state.' + 'commiting transaction'								rollback transaction								set @message='Transaction fail'							end				end catch			enddeclare @message varchar(100)exec sp_delect_person 2,@message outprint @messagedeclare 		@errorMessage nvarchar(100),		@errorSeverity int,		@errorState int		begin try				raiserror('whoops an error ocoure',17,2);		end try		begin catch			select 				@errorMessage=error_message(),				@errorSeverity=error_severity(),				@errorState=error_state();				raiserror(@errorMessage,@errorSeverity,@errorState);		end catch--Transactioncreate table Bank_account_tbl(							acc_no int primary key,							balance money							)--insert initial datainsert into Bank_account_tbl(acc_no,balance) values(1,500),(2,600),(3,700)--read uncommited data--Transaction t1: Fund transfer from account A to account Bbegin transaction--deduct 100 from account Aupdate Bank_account_tbl set balance=balance-100where acc_no=1;--simulate a delay or some processingwaitfor delay '00:00:05';    --simulating some processsing time--transaction T2: Quary balance of account B with read uncommitedset transaction isolation level read uncommitted--read the balance of account B ( may read uncommitted data)select balancefrom Bank_account_tblwhere acc_no=1--commit or rollback transction T1rollback--read uncommited data--Transaction t1: Fund transfer from account A to account Bbegin transaction--deduct 100 from account Aupdate Bank_account_tbl set balance=balance-100where acc_no=1;--simulate a delay or some processingwaitfor delay '00:00:05';    --simulating some processsing time--transaction T2: Quary balance of account B with read uncommitedset transaction isolation level read uncommitted--read the balance of account B ( may read uncommitted data)update Bank_account_tblset balance=balance+100where acc_no=2--commit or rollback transction T1commitselect * from Bank_account_tbl--comitted--read uncommited data--Transaction t1: Fund transfer from account A to account Bbegin transaction--deduct 100 from account Aupdate Bank_account_tbl set balance=balance-100where acc_no=2;--simulate a delay or some processingwaitfor delay '00:00:05';    --simulating some processsing time--transaction T2: Quary balance of account B with read uncommitedset transaction isolation level read committedselect * from Bank_account_tblupdate Bank_account_tblset balance=balance+100where acc_no=1--read the balance of account B ( may read uncommitted data)--commit or rollback transction T1commitselect * from Bank_account_tbl-----------------------------------------------------------------------------------------07/02/2024use studentDBselect * from [HR].emp_tblinsert into [HR].emp_tbl (emp_name,gender,address,salary,doj,dept_id)values('pranav','M','Howrah',40000,'2024-01-18',102)begin transaction mytranupdate [HR].emp_tbl set salary=31000 where emp_id=201save tran update_to_point_201update [HR].emp_tbl set salary=25000 where emp_id=202save tran update_to_point_202delete from [HR].emp_tbl where emp_id=205rollback tran update_to_point_201commitupdate [HR].emp_tbl set salary=25000 where emp_id=201save tran update_to_point_201 print XACT_STATE()  create table [hr].[dept_tbl_1](							dept_id int primary key,							dept_name varchar(30),							emp_id int, 							constraint dept_tbl_fk foreign key(emp_id) references  [HR].emp_tbl(emp_id)							)insert into [hr].[dept_tbl_1] values(101,'IT',201),(102,'Accounts',203)select * from [hr].[dept_tbl_1] begin transaction mytrandelete from [HR].emp_tbl where emp_id=101 save tran update_to_point_201update [HR].emp_tbl set salary=25000 where emp_id=202save tran update_to_point_202delete from [HR].emp_tbl where emp_id=205rollback tran update_to_point_201rollbackselect * from hr.emp_tbl print XACT_STATE() set IMPLICIT_TRANSACTIONS onupdate [HR].emp_tbl set salary=45000 where emp_id=201save tran update_to_point_201update [HR].emp_tbl set salary=25000 where emp_id=202save tran update_to_point_202delete from [HR].emp_tbl where emp_id=205rollback tran update_to_point_201select * from [HR].emp_tbluse BikeStores----------------------------------------------------------------------------------------------------------create a procedure define one parameter that will take an input as model year and count the the number of product placed -- in this model yearalter proc usp_modelyr(@modelyr int,@mess varchar(50) out)as begin						select p.model_year,count(o.order_id) as total_count			from sales.order_items as oi			join production.products as p on p.product_id=oi.product_id			join sales.orders as o on oi.order_id =o.order_id			where p.model_year=@modelyr			group by p.model_year			if(@@ROWCOUNT<=0)			begin					set @mess='No order placed in this year'			endend declare @mess varchar(50)exec usp_modelyr 2019, @mess outprint @mess--create a procedure to display empuse HRDBcreate proc usp_MinMaxSal(@min_salary dec,@max_salary dec)as begin 	select e.first_name,e.hire_date,e.salary,j.job_title	from dbo.employees as e	join dbo.jobs as j on e.job_id=j.job_id	where e.salary between @min_salary and @max_salary endexec usp_MinMaxSal 8000,20000use BikeStoresalter proc usp_orderDate(@startdate date,@endDate date,@productName varchar(50),@mess varchar(100) out,@row_cont int out)asbegin		--set nocount on		select b.brand_name,p.product_name,p.list_price		from production.brands as b		join production.products as p on b.brand_id=p.brand_id		join sales.order_items as oi on oi.product_id=p.product_id		join sales.orders as o on oi.order_id=o.order_id		where o.order_date between @startdate and @endDate and 		p.product_name like '%'+@productName+'%'		set @row_cont=@@ROWCOUNT		if(@@ROWCOUNT<=0)				set @mess='No order between this date'		enddeclare @mess varchar(100),@row_cont intexec usp_orderDate '2016-01-05','2016-01-20','remedy',@mess out,@row_cont outprint @messprint @row_contprint concat('Row count= ',@row_cont)print 'asd'+char(10)----------------------------------------------------------------------------------------------------08/02/2024use BikeStoresalter proc usp_customerDetails(@cust_id int,@mess varchar(60) out)as begin		select c.customer_id,c.first_name,p.product_name,oi.quantity		from production.products as p 		join sales.order_items as oi on p.product_id=oi.product_id		join sales.orders as o on oi.order_id=o.order_id		join sales.customers as c on c.customer_id=o.customer_id		where c.customer_id=@cust_id		if(@@ROWCOUNT<=0)					set @mess='there is no order for this cutomer'enddeclare @mess varchar(60)exec usp_customerDetails  3,@mess outprint @messuse studentDBdrop table mcc.Train_tablecreate table mcc.passenger_tbl(								p_id int primary key,								passenger_name varchar(50),								train_no int foreign key references mcc.Train_table(train_no),								)create table mcc.Train_table(							train_no int primary key,							train_name varchar(100),							)INSERT INTO mcc.Train_table (train_no, train_name) VALUES
+(101, 'Mumbai Central - Ahmedabad Shatabdi Express'),
+(102, 'Howrah - New Delhi Rajdhani Express'),
+(103, 'New Delhi - Bangalore City Karnataka Express'),
+(104, 'Hazrat Nizamuddin - Kanyakumari Thirukkural SF Express'),
+(105, 'Chennai Central - Hazrat Nizamuddin Rajdhani Express'),
+(106, 'Chennai Central - Hazrat Nizamuddin Duronto Express'),
+(107, 'Mumbai Central - New Delhi Rajdhani Express'),
+(108, 'Pune - Ahmedabad AC Duronto Express');
+
+
+INSERT INTO mcc.passenger_tbl (p_id, passenger_name, train_no) VALUES
+(1, 'Rajesh Kumar', 101),
+(2, 'Priya Sharma', 102),
+(3, 'Amit Patel', 102),
+(4, 'Neha Singh', 103),
+(5, 'Rahul Gupta', 102),
+(6, 'Sneha Verma', 105),
+(7, 'Vikas Mishra', 102);
+
+select * from mcc.Train_table
+select * from mcc.passenger_tbl
+
+alter proc usp_passDetails(@train_no int,@mess varchar(60) out)
+with encryption
+as 
+begin
+	select t.train_no, t.train_name,p.passenger_name
+	from mcc.Train_table as t
+	join mcc.passenger_tbl as p on t.train_no=p.train_no
+	where t.train_no=@train_no
+	if(@@ROWCOUNT<=0)					set @mess='No passemnger found for this train'endsp_helptext usp_passDetailsdeclare @mess varchar(60)exec usp_passDetails  107,@mess outprint @messCreate Procedure usp_GetTotalCountOfEmployees(@TotalCount int output)
+as
+Begin
+			Select @TotalCount = COUNT(train_no) from  mcc.Train_table
+Enddeclare @totalcount intexec usp_GetTotalCountOfEmployees @totalcount out print @totalcountCreate Procedure usp_GetTotalCountOfEmployee_1
+as
+Begin
+			return(Select COUNT(train_no) from  mcc.Train_table)
+End
+
+declare @totalcount int
+exec @totalcount=usp_GetTotalCountOfEmployee_1
+select @totalcount
+
+Create Procedure spGetNameById2(@train_no int)
+as
+Begin
+Return (Select train_name from mcc.Train_table Where train_no = @train_no)
+End
+
+declare @train_name varchar(70)
+exec @train_name=spGetNameById2 102
+print @train_name
+
+create table mcc.user_tbl(
+							[user_name] varchar(40),
+							[pass_word] varchar(30),
+							[first_name] varchar(40),
+							[last_name] varchar(40),
+							email varchar(30),
+							createdby varchar(30)
+						)
+
+INSERT INTO mcc.user_tbl (user_name, pass_word, first_name, last_name, email, createdby) VALUES
+('Subrata', 'password123', 'Subrata', 'Pal', 'Subratapal0199.com', 'Subrata'),
+('priyasharma', 'password242', 'Priya', 'Sharma', 'priya@example.com', 'Admin'),
+('amitpatel', 'password345', 'Amit', 'Patel', 'amit@example.com', 'Amit'),
+('nehasingh', 'password4348', 'Neha', 'Singh', 'neha@example.com', 'Admin');
+
+select * from mcc.user_tbl
+
+alter proc usp_userDetails(
+							@user_name varchar(40),
+							@pass_word varchar(30),
+							@first_name varchar(40),
+							@last_name varchar(40),
+							@email varchar(30),
+							@createdby varchar(30),
+							@message varchar(100) out 
+							)
+as 
+begin 
+		set nocount on;
+		if not exists( select * from mcc.user_tbl where user_name=@user_name)
+			begin
+				insert into mcc.user_tbl([user_name], pass_word, first_name, last_name, email, createdby)
+				values(@user_name,@pass_word,@first_name,@last_name,@email,@createdby)
+				set @message=@user_name +' Register Successfully'
+			end
+		else
+			begin
+				set @message=@user_name + ' Already exists'
+			end
+end
+
+declare @message varchar(100)
+exec usp_userDetails 'biplab ', 'password4348', 'Pranav', 'Divedi', 'pranav@example.com', 'pranav',@message out
+print @message 
+
+---update statement
+alter proc usp_userDetails(
+							@user_name varchar(40),
+							@pass_word varchar(30),
+							@first_name varchar(40),
+							@last_name varchar(40),
+							@email varchar(30),
+							@createdby varchar(30),
+							@message varchar(100) out 
+							)
+as 
+begin 
+		set nocount on;
+		if not exists( select * from mcc.user_tbl where user_name=@user_name)
+			begin
+				insert into mcc.user_tbl([user_name], pass_word, first_name, last_name, email, createdby)
+				values(@user_name,@pass_word,@first_name,@last_name,@email,@createdby)
+				set @message=@user_name +' Register Successfully'
+			end
+		else
+			begin
+				update  mcc.user_tbl set first_name=@first_name
+				where [USER_NAME]=@user_name
+				if(@@ROWCOUNT>0)
+					set @message=@user_name + ' updated'
+			end
+end
+
+declare @message varchar(100)
+exec usp_userDetails 'nehasingh', 'password4348', 'Souvik', 'Singh', 'neha@example.com', 'Admin',@message out
+print @message 
+
+select * from mcc.user_tbl
+
+create proc usp_report_erroras	select ERROR_NUMBER() as errorNumber,		   ERROR_LINE() as errorLine,		   ERROR_MESSAGE() as errorMessage,		   ERROR_SEVERITY() as errorServerity,		   ERROR_PROCEDURE() as errorProcedure,		   ERROR_STATE() as errorState
+
+
+alter proc usp_userDetails(
+							@user_name varchar(40),
+							@pass_word varchar(30),
+							@first_name varchar(40),
+							@last_name varchar(40),
+							@email varchar(30),
+							@createdby varchar(30),
+							@message varchar(100) out 
+							)
+as 
+begin 
+				begin try
+					begin transaction 
+						delete from mcc.user_tbl where [USER_NAME]=@user_name
+						if(@@ROWCOUNT>0)
+							set @message=@user_name + ' Deleted'
+						else
+							set @message=@user_name + ' NOT Deleted'
+						commit transaction;
+				end try
+				begin catch
+						exec usp_report_error;
+						if(XACT_STATE())=-1
+							begin
+								PRINT N'The transaction is in an uncommittable state.' + 'Rolling back transaction.'
+								set @message='Transaction fail for uncommitable state'
+								ROLLBACK TRANSACTION; 
+								
+							end
+						if(XACT_STATE())=1
+							begin 
+								PRINT N'The transaction is committable.' + 'Committing transaction.'
+								
+								COMMIT TRANSACTION; 
+								set @message='Transaction fail for commitable state'
+								
+							end
+				end catch
+			
+end
+
+
+declare @message varchar(100)
+exec usp_userDetails'priyasharma', 'password2465', 'Priya', 'Sharma', 'priya@example.com', 'Admin',@message out
+print @message 
+
+
+select * from mcc.user_tbl
+
+
+
+
+
+alter proc usp_employee(
+							@emp_id int,
+							@emp_name varchar(60)=null,
+							@gender char(1)=null,
+							@address varchar(80)=null,
+							@salary money=0,	
+							@doj date,
+							@dept_id int=0,
+							@Reqtype  varchar(10)=NULL,
+							@message varchar(100) out
+						)
+as 
+begin
+	if @Reqtype='select'
+		begin
+			select emp_id,emp_name,gender,[address],salary,doj,dept_id
+			from HR.emp_tbl
+			where emp_id=@emp_id
+			if(@@ROWCOUNT>0)
+				set @message='Selection Successfully'
+			else
+				set @message='Not Selected'
+		end
+	if @Reqtype='insert'
+		begin
+			insert into HR.emp_tbl(emp_name,gender,[address],salary,doj,dept_id) values
+			(@emp_name,@gender,@address,@salary,@doj,@dept_id)
+			if(@@ROWCOUNT>0)
+				set @message='inserted Successfully'
+			else
+				set @message='Not Inserted'
+		end
+	if @Reqtype='delete'
+		begin
+			delete from hr.emp_tbl where emp_id=@emp_id
+			if(@@ROWCOUNT>0)
+				set @message='Deleted Successfully'
+			else
+				set @message='Not Deleted'
+		end
+	if @Reqtype='update'
+		begin
+			update hr.emp_tbl set emp_name=@emp_name,gender=@gender,[address]=@address,salary=@salary,doj=@doj,dept_id=@dept_id
+			where emp_id=@emp_id
+			if(@@ROWCOUNT>0)
+				set @message='Updated Successfully'
+			else
+				set @message='Not updated'
+		end
+end
+
+select * from HR.emp_tbl
+
+declare @mess varchar(100)
+exec usp_employee 205,'Rahul','M','behala',56000,'2024/01/17',101,'select',@mess out
+print @mess
+
+
+------------------------------------------------------------------------------------------------------
+
+use BikeStores
+
+create proc usp_customerDetail(@cust_id int)
+as 
+begin
+	select first_name,last_name
+	from sales.customers
+	where customer_id=@cust_id
+end 
+
+alter proc usp_productDetail(@p_id int)
+as 
+begin
+	select product_name from production.products
+	where product_id=@p_id
+end
+
+	
+alter proc usp_mainDetail(@cust_id int ,@p_id int)
+as 
+begin
+	 exec usp_customerDetail @cust_id
+	 exec usp_productDetail @p_id
+end
+
+exec usp_mainDetail 1,2
+
+
+alter proc usp_bothCustDetl(@cust_id int)
+as 
+begin
+	select c.first_name,c.last_name,p.product_name
+	from sales.customers as c
+	join sales.orders as o on c.customer_id=o.customer_id
+	join sales.order_items as oi on oi.order_id=o.order_id
+	join production.products as p on p.product_id=oi.product_id
+	where c.customer_id=@cust_id
+end
+
+
+alter proc usp_mainDetail(@cust_id int )
+as 
+begin
+	 --exec usp_customerDetail @cust_id
+	 --exec usp_productDetail @p_id
+	  exec usp_bothCustDetl @cust_id
+end
+
+exec usp_mainDetail 2
+
+
+use HRDB
+create proc usp_cityDetails(@city varchar(40),@region_name varchar(50))
+as 
+begin
+		select e.first_name,d.department_id,r.region_name,c.country_name,l.city
+		from dbo.employees as e
+		join dbo.departments as d on e.department_id=d.department_id
+		join dbo.locations as l on d.location_id=l.location_id
+		join dbo.countries as c on l.country_id=c.country_id
+		join dbo.regions as r on r.region_id=c.region_id
+		where r.region_name=@region_name and l.city=@city
+end
+
+exec usp_cityDetails 'london','europe'
+
+---------------------------------------------------------------------------------------------
+--09/02/2024
+--create a proc to display information of staffs who have not generate any sales accoross
+use BikeStores
+select * from sales.staffs
+
+select * from sales.order_items
+where item_id is null
+
+alter proc usp_sales
+as 
+begin
+					select s.staff_id,s.first_name,st.store_name,o.order_id
+					from sales.stores as st
+					left join sales.staffs as s on st.store_id=s.store_id
+					left join sales.orders as o on s.staff_id=o.staff_id
+					where o.order_id is null
+end
+
+exec usp_sales 
+
+--create  a proc to display products which have not sold accros in store
+-----------------------------------------------------------------------------------------------------------
+create database Index_DB
+use Index_DB
+
+
+CREATE TABLE Employee (
+						[ID] INT,
+						[Name] VARCHAR(50),
+						[Salary] INT,
+						[Gender] VARCHAR(10),
+						[City] VARCHAR(50),
+						[Dept] VARCHAR(50)
+					)
+
+INSERT INTO Employee VALUES (3,'Pranaya', 4500, 'Male', 'New York', 'IT')
+INSERT INTO Employee VALUES (1,'Anurag', 2500, 'Male', 'London', 'IT')
+INSERT INTO Employee VALUES (4,'Priyanka', 5500, 'Female', 'Tokiyo', 'HR')
+INSERT INTO Employee VALUES (5,'Sambit', 3000, 'Male', 'Toronto', 'IT')
+INSERT INTO Employee VALUES (7,'Preety', 6500, 'Female', 'Mumbai', 'HR')
+INSERT INTO Employee VALUES (6,'Tarun', 4000, 'Male', 'Delhi', 'IT')
+INSERT INTO Employee VALUES (2,'Hina', 500, 'Female', 'Sydney', 'HR')
+INSERT INTO Employee VALUES (8,'John', 6500, 'Male', 'Mumbai', 'HR')
+INSERT INTO Employee VALUES (10,'Pam', 4000, 'Female', 'Delhi', 'IT')
+INSERT INTO Employee VALUES (9,'Sara', 500, 'Female', 'London', 'IT')
+
+SELECT * FROM Employee Where Id = 8;
+
+DECLARE @counter INT = 1;
+WHILE @counter <= 100000
+BEGIN
+    INSERT INTO Employee ([ID], [Name], [Salary], [Gender], [City], [Dept])
+    VALUES (
+        @counter,
+        'Employee' + CAST(@counter AS VARCHAR(10)),
+        ROUND(RAND() * 100000, 2), -- Random salary between 0 and 100000
+        CASE WHEN RAND() > 0.5 THEN 'Male' ELSE 'Female' END,
+        'City' + CAST((RAND() * 100) AS varchar(100)), -- Random city number between 0 and 100
+        'Dept' + CAST((RAND() * 10) AS varchar(100)) -- Random department number between 0 and 10
+    );
+    SET @counter = @counter + 1;
+END;
+
+truncate table employee
+
+---insert 65lack data
+INSERT INTO Employee (ID, Name, Salary, Gender, City, Dept)
+SELECT 
+    ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS ID,
+    CONCAT('Employee', ROW_NUMBER() OVER (ORDER BY (SELECT NULL))) AS Name,
+    CAST(RAND() * 100000 AS INT) AS Salary,
+    CASE WHEN RAND() < 0.5 THEN 'Male' ELSE 'Female' END AS Gender,
+    CASE WHEN RAND() < 0.3 THEN 'New York' 
+         WHEN RAND() < 0.6 THEN 'Los Angeles'
+         ELSE 'Chicago' END AS City,
+    CASE WHEN RAND() < 0.2 THEN 'IT' 
+         WHEN RAND() < 0.4 THEN 'HR'
+         WHEN RAND() < 0.6 THEN 'Finance'
+         ELSE 'Operations' END AS Dept
+FROM 
+    master..spt_values t1
+CROSS JOIN 
+    master..spt_values t2
+
+select * from Employee 
+
+--create index
+create clustered index ix_Employee_id on Employee(id asc)
+
+create nonclustered  index ix_Employee_city on Employee(city asc)
+
+select * from Employee where City  in ('New York','Delhi')
+
+select * from Employee where [Name]='Anurag'
+
+drop index Employee.ix_Employee_city 
+
+create clustered  index ix_Employee_city on Employee(city asc)
+
+select * from Employee where ID  in (6,5,76)
+
+select * from Employee where City not in ('New York','Delhi')
+
+drop table dept
+
+create table dept(
+					id int ,
+					unique(id),
+					name varchar(40)
+				)
+
+
+drop index Employee.ix_Employee_city 
+
+
+CREATE TABLE tblOrder
+(
+[Id] INT,
+[CustomerId] INT,
+[ProductId] Varchar(100),
+[ProductName] VARCHAR(50)
+)
+ truncate table  tblOrder
+
+DECLARE @i int = 0
+WHILE @i <= 6000
+BEGIN
+	SET @i = @i + 1
+	IF(@i <= 1000)
+		Begin 
+			INSERT INTO tblOrder VALUES (@i, 1, 'Product - 10120', 'Laptop') End
+	ELSE IF(@i <= 2000)
+		Begin 
+			INSERT INTO tblOrder VALUES (@i, 3, 'Product - 1020', 'Mobile') End
+	Else if(@i < =3000)
+		Begin 
+			INSERT INTO tblOrder VALUES (@i, 2, 'Product - 101', 'Desktop') End
+	Else if(@i <= 4000)
+		Begin	
+			INSERT INTO tblOrder VALUES (@i, 3, 'Product - 707', 'Pendrive') End
+	Else if(@i < =5000)
+		Begin 
+			INSERT INTO tblOrder VALUES (@i, 2, 'Product - 999', 'HD') End
+	Else if(@i < =6000)
+		Begin 
+			INSERT INTO tblOrder VALUES (@i, 1, 'Product - 100', 'Tablet')
+	End
+ENDselect * from tblOrder where [ProductName]='Tablet'select * from tblOrder where [ProductId]='Product - 101'create nonclustered index ix_tblOrder_productid on dbo.tblOrder([ProductId])include([id],[customerid],[productname])select * from tblOrder where [ProductId]='Product - 101'select * from tblOrder where [ProductName]='Laptop'select * from tblOrder where [ProductName]='pendrive' and [customerid]=3drop index tblOrder.ix_tblOrder_productidcreate nonclustered index ix_tblOrder_productid on dbo.tblOrder([ProductId])select * from tblOrder where [ProductName]='pendrive' and [customerid]=3drop index tblOrder.ix_tblOrder_productidcreate nonclustered index ix_tblOrder_productid on dbo.tblOrder([customerid],[ProductName])include([id],[ProductId])select * from tblOrder where [ProductName]='pendrive' and [customerid]=3CREATE TABLE CUSTOMER (
+					[cust_id] INT PRIMARY KEY,
+					[cust_name] VARCHAR(100),
+					[address] VARCHAR(255),
+					[phone] VARCHAR(20),
+					[email] VARCHAR(100),
+					[city] VARCHAR(100),
+					[state] VARCHAR(50)
+					);DECLARE @counter INT = 1;
+
+WHILE @counter <= 100000
+BEGIN
+    INSERT INTO CUSTOMER ([cust_id], [cust_name], [address], [phone], [email], [city], [state])
+    VALUES (@counter, 'CustomerName' + CAST(@counter AS VARCHAR(10)), 'Address' + CAST(@counter AS VARCHAR(10)), 'PhoneNumber' + CAST(@counter AS VARCHAR(10)), 'email' + CAST(@counter AS VARCHAR(10)) + '@example.com', 'City' + CAST(@counter AS VARCHAR(10)), 'State' + CAST(@counter AS VARCHAR(10)));
+
+    SET @counter = @counter + 1;
+END
+
+select * from CUSTOMER
+
+
+
+create nonclustered index ix_customer on CUSTOMER([address],[phone],[email],[city])include([cust_id])drop index CUSTOMER.ix_customerselect * from CUSTOMER where cust_id=27select * from CUSTOMER where [state]='State146'select * from CUSTOMER where [state]='State146' and [address]='Address146'select * from CUSTOMER where [address]='Address146' and phone='PhoneNumber146'
