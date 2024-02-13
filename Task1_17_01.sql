@@ -2556,6 +2556,9 @@ end
 exec usp_sales 
 
 --create  a proc to display products which have not sold accros in store
+use Subrata_DB
+create table student_tbl
+
 -----------------------------------------------------------------------------------------------------------
 create database Index_DB
 use Index_DB
@@ -2704,4 +2707,4 @@ select * from CUSTOMER
 
 
 
-create nonclustered index ix_customer on CUSTOMER([address],[phone],[email],[city])include([cust_id])drop index CUSTOMER.ix_customerselect * from CUSTOMER where cust_id=27select * from CUSTOMER where [state]='State146'select * from CUSTOMER where [state]='State146' and [address]='Address146'select * from CUSTOMER where [address]='Address146' and phone='PhoneNumber146'
+create nonclustered index ix_customer on CUSTOMER([address],[phone],[email],[city])include([cust_id])drop index CUSTOMER.ix_customerselect * from CUSTOMER where cust_id=27 and [address]='address27'select * from CUSTOMER where [state]='State146'select * from CUSTOMER where [state]='State146' and [address]='Address146'select * from CUSTOMER where [address]='Address146' and phone='PhoneNumber146'
