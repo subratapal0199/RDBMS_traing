@@ -2707,4 +2707,90 @@ select * from CUSTOMER
 
 
 
-create nonclustered index ix_customer on CUSTOMER([address],[phone],[email],[city])include([cust_id])drop index CUSTOMER.ix_customerselect * from CUSTOMER where cust_id=27 and [address]='address27'select * from CUSTOMER where [state]='State146'select * from CUSTOMER where [state]='State146' and [address]='Address146'select * from CUSTOMER where [address]='Address146' and phone='PhoneNumber146'
+create nonclustered index ix_customer on CUSTOMER([address],[phone],[email],[city])include([cust_id])drop index CUSTOMER.ix_customerselect * from CUSTOMER where cust_id=27 and [address]='address27'select * from CUSTOMER where [state]='State146'select * from CUSTOMER where [state]='State146' and [address]='Address146'select * from CUSTOMER where [address]='Address146' and phone='PhoneNumber146'--------------------------------------------------------------------------------------------------13/02/2024 Indexcreate table sample_tbl(					id int unique,					name varchar(50)				)				drop table sample_tblcreate unique clustered index ix_sample_tbl_id on sample_tbl(id)drop index sample_tbl.ix_sample_tbl_id-------------------------------------------------------------------------------------------------Trigger --13/02/2024create database Triger_DBuse Triger_DB
+CREATE TABLE Employee
+(
+Id int Primary Key,
+Name nvarchar(30),
+Salary int,
+Gender nvarchar(10),
+DepartmentId int
+)
+
+INSERT INTO Employee VALUES (1,'Pranaya', 5000, 'Male', 3)
+INSERT INTO Employee VALUES (2,'Priyanka', 5400, 'Female', 2)
+INSERT INTO Employee VALUES (3,'Anurag', 6500, 'male', 1)
+INSERT INTO Employee VALUES (4,'sambit', 4700, 'Male', 2)
+INSERT INTO Employee VALUES (5,'Hina', 6600, 'Female', 3)
+
+select *from Employee 
+
+create trigger tr_insert_employee on Employee 
+for insert 
+as
+begin
+		print 'You can not insert operation'
+		rollback transaction
+end
+
+insert into Employee values(6,'Subrata',7500,'Male',1) 
+
+alter trigger tr_insert_employee on Employee 
+for delete 
+as
+begin
+		print 'You cannot delete operation'
+		rollback transaction
+end
+
+delete from Employee  where id=5
+
+
+create trigger tr_insert_employee on Employee 
+after insert,delete,update 
+as
+begin
+		print 'You cannot do this operation'
+		rollback transaction
+end
+
+update Employee set [name]='Sreya' where id=5
+
+drop trigger tr_insert_employee
+
+--Create a Trigger that will restrict all the DML operations on the Employee table on MONDAY only.
+alter trigger tr_insert_employee on Employee 
+after insert,delete,update 
+as
+begin
+		if DATEPART(dw,getdate())=3
+		begin
+			print 'You cannot do the DML operation'
+			rollback transaction
+		end
+end
+
+update Employee set [name]='Ankita' where id=5
+
+select *from Employee 
+
+select DATEPART(HOUR,getdate())
+
+alter trigger tr_insert_employee on Employee 
+after insert,delete,update 
+as
+begin
+		if (DATEPART(hour,getdate())=19 and (DATEPART(MINUTE, getdate()) between 32 and 34))
+		--if ((DATEPART(HOUR, getdate()) BETWEEN 9 AND 15) or 
+		--(DATEPART(HOUR, getdate())= 24 and (DATEPART(MINUTE, getdate()) between 00 and 30))) 
+		begin
+			print 'You cannot do the DML operation'
+			rollback transaction
+		end
+end
+
+update Employee set [name]='Subra5ta' where id=5
+
+insert into Employee values(7,'Rahul',7500,'Male',1) 
+
+insert into Employee values(8,'Susmita',7500,'FeMale',1) 
