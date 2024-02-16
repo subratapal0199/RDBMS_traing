@@ -1712,8 +1712,9 @@ from [HR]
 
 
 use Exam_DB
-select name from sysobjects 
-where xtype='U'
+select * from sysobjects 
+where xtype='u'
+
 
 use BikeStores
 
@@ -2794,3 +2795,708 @@ update Employee set [name]='Subra5ta' where id=5
 insert into Employee values(7,'Rahul',7500,'Male',1) 
 
 insert into Employee values(8,'Susmita',7500,'FeMale',1) 
+
+-------------------------------------------------------------------------------------------
+use Triger_DB
+alter trigger tr_insert_employee on Employee 
+after delete
+as
+begin
+		select * from deleted
+		--commit 
+end
+
+select * from Employee
+
+insert into Employee values(10,'pranav',65400,'Male',3)
+
+delete from Employee where Id=7
+
+
+alter trigger tr_insert_employee on Employee 
+after update
+as
+begin
+		select * from deleted
+		select * from inserted
+	
+
+		--commit 
+end
+
+insert into Employee values(7,'Sumon',65400,'Male',3)
+
+delete from Employee where Id=6
+
+update Employee set Name ='Tubai' where Id=7
+
+drop table EmployeeAudit
+
+create table EmployeeAudit(
+							id int identity(1,1) primary key,
+							auidtData varchar(100),
+							auidtdate datetime 
+							)
+
+
+drop trigger tr_insert_employee
+ 
+create trigger tr_employee_for_insert on Employee
+after insert
+as
+begin
+			declare @id int,@name varchar(100),@auidtData varchar(100)
+			select @id=id,@name=[name] from inserted
+
+			--set the auidtdata to be stored in the auidt table
+
+			select @auidtData='New Employee added with id= '+CAST(@id as varchar(100))+' and Name= '+@name
+
+			--insert the data into the auidttbl
+			insert into EmployeeAudit(auidtData,auidtdate) values(@auidtData,GETDATE())
+end
+
+select * from Employee
+
+insert into Employee values(6,'Misti',76000,'Female',1)
+
+select * from EmployeeAudit
+select update()
+
+CREATE TABLE Department
+(
+ID INT PRIMARY KEY,
+Name VARCHAR(50)
+)
+-- Populate the Department Table with test data
+INSERT INTO Department VALUES(1, 'IT')
+INSERT INTO Department VALUES(2, 'HR')
+INSERT INTO Department VALUES(3, 'Sales')
+-- Create Employee Table
+CREATE TABLE Employee
+(
+ID INT PRIMARY KEY,
+Name VARCHAR(50),
+Gender VARCHAR(50),
+DOB DATETIME,
+Salary DECIMAL(18,2),
+DeptID INT
+)
+-- Populate the Employee Table with test data
+INSERT INTO Employee VALUES(1, 'Pranaya', 'Male','1996-02-29 10:53:27.060', 25000, 1)
+INSERT INTO Employee VALUES(2, 'Priyanka', 'Female','1995-05-25 10:53:27.060', 30000, 2)
+INSERT INTO Employee VALUES(3, 'Anurag', 'Male','1995-04-19 10:53:27.060',40000, 2)
+INSERT INTO Employee VALUES(4, 'Preety', 'Female','1996-03-17 10:53:27.060', 35000, 3)
+INSERT INTO Employee VALUES(5, 'Sambit', 'Male','1997-01-15 10:53:27.060', 27000, 1)
+INSERT INTO Employee VALUES(6, 'Hina', 'Female','1995-07-12 10:53:27.060', 33000, 2)
+
+CREATE VIEW vwEmployeeDetails
+AS
+SELECT emp.ID, emp.Name, Gender, Salary, dept.Name AS Department
+FROM Employee emp
+INNER JOIN Department dept
+ON emp.DeptID = dept.ID
+select * from vwEmployeeDetails
+
+UPDATE vwEmployeeDetails
+SET Name = 'Kumar', Salary = 45000, Department = 'HR'
+WHERE Id = 1
+
+CREATE TRIGGER tr_vwEmployeeDetails_InsteadOfUpdate ON vwEmployeeDetails
+INSTEAD OF UPDATE
+AS
+BEGIN
+-- if EmployeeId is updated
+IF(UPDATE(ID))
+BEGIN
+RAISERROR('Id cannot be changed', 16, 1)
+RETURN
+ENd
+--If Department Name is updated
+IF(UPDATE(Department)) 
+BEGIN
+DECLARE @DepartmentID INT
+SELECT @DepartmentID = dept.ID
+FROM Department dept
+INNER JOIN INSERTED inst
+ON dept.Name = inst.Department
+IF(@DepartmentID is NULL )
+BEGIN
+RAISERROR('Invalid Department Name', 16, 1)
+RETURN
+END
+UPDATE Employee set DeptID = @DepartmentID
+FROM INSERTED
+INNER JOIN Employee
+on Employee.ID = inserted.ID
+End
+-- If gender is updated
+IF(UPDATE(Gender))
+BEGIN
+UPDATE Employee SET Gender = inserted.Gender
+FROM INSERTED
+INNER JOIN Employee
+ON Employee.ID = INSERTED.ID
+END
+-- If Salary is updated
+IF(UPDATE(Salary))
+BEGIN
+UPDATE Employee SET Salary = inserted.Salary
+FROM INSERTED
+INNER JOIN Employee
+ON Employee.ID = INSERTED.ID
+END
+-- If Name is updated
+IF(UPDATE(Name))
+BEGIN
+UPDATE Employee SET Name = inserted.Name
+FROM INSERTED
+INNER JOIN Employee
+ON Employee.ID = INSERTED.ID
+END
+END
+
+select * from vwEmployeeDetails
+
+UPDATE vwEmployeeDetails SET Department = 'HR' WHERE Id = 1
+
+
+d
+
+--DDL statement
+create trigger tr_restrictDatabase on database
+for create_table
+as
+begin
+		print 'you can not create a tble in this database'
+		rollback tran
+end
+
+
+create table Teacher(
+						id int primary key,
+						t_name varchar(100)
+					)
+
+
+drop trigger tr_restrictDatabase on database
+
+
+alter trigger tr_restrictAlterTable on database
+for alter_table
+as
+begin
+		print 'you can not alter a tble in this database'
+		rollback tran
+end
+alter table Teacher alter column t_name varchar(100)
+
+
+
+drop trigger tr_restrictAlterTable on database
+
+
+create  trigger tr_restrictDropTable on database
+for drop_table
+as
+begin
+		print 'you can not drop a tble in this database'
+		rollback tran
+end
+
+drop table teacher
+
+
+drop trigger tr_restrictDropTable  on database
+
+
+disable trigger tr_restrictDropTable on database
+
+create  trigger tr_restrictDDLEvent on database
+for create_table,alter_table,drop_table
+as
+begin
+		print 'you can not do DDL event in this database'
+		rollback tran
+end
+
+drop table teacher
+
+drop trigger tr_restrictDDLEvent on database
+
+disable trigger tr_restrictDropTable on database
+
+--instated of trigger
+select * from Employee
+
+drop table EmployeeAudit
+
+
+create table EmployeeAudit(
+							id int identity(1,1) primary key,
+							auidtdata varchar(100),
+							auidtDate date
+							)
+
+
+alter trigger tr_employee_insert on employee
+for insert
+as 
+begin
+		declare @id int
+		declare @name varchar(100)
+		declare @auidtdata varchar(100)
+
+		select @id=id,@name=[name] from inserted
+
+		set @auidtdata='Hey! New Employee added with id= '+ CAST(@id as varchar(100)) + ' and name= ' + @name
+
+		insert into EmployeeAudit(auidtData,auidtdate) values (@auidtdata,GETDATE())
+
+end 
+
+select * from Employee
+
+insert into Employee values(8,'Priyanka','Female',GETDATE(),null,null)
+
+select * from EmployeeAudit
+
+drop trigger tr_employee_insert 
+
+
+
+create trigger tr_employee_update
+for update
+as 
+begin 
+		declare @id int 
+		declare @old_name varchar(100), @new_name varchar(100)
+		declare @old_gndr varchar(20), @new_gndr varchar(20)
+		declare @old_salary dec(10,2), @new_salary dec(10,2)
+		declare @old_dept_id int ,@new_dpt_id int 
+		declare @auidtData varchar(max)
+
+		select * into #updateDataTempTbl
+		from inserted
+
+		set @auidtdata=''
+
+		select top 1 @id=id,
+					 @new_name=[name],
+					 @new_gndr=gender,
+					 @new_salary=salary,
+					 @new_dpt_id=deptid
+
+
+------------------------------------------------------------------------------------------------------
+--15/02/2024
+--cte -- 
+create database cte_DB
+use cte_DB
+
+
+
+
+create table city_tbl(
+						id int primary key,
+						city_name varchar(500)
+					)
+
+insert into city_tbl values(1,'kolkata'),(2,'Delhi'),(3,'Mumbai'),(4,'kolkata'),(5,'Delhi'),(6,'kolkata')
+
+select * from city_tbl
+
+with cte as(
+	select * from city_tbl
+)
+select * from cte where id=6
+
+create table student(
+						id int primary key,
+						std_name varchar(50),
+						math int,
+						english int,
+						computer int
+					)
+
+insert into student values(1,'Subrata',64,33,55),(2,'Pranab',32,56,64),(3,'Rahul',4,6,7)
+
+select * from student
+
+with cte as 
+(
+	select *, (math+english+computer)/3 as avgarge
+	from student
+) select * from cte
+
+create table department_tbl(
+							dept_id int primary key,
+							dept_name varchar(50),
+							std_id int foreign key references student(id)
+							)
+
+insert into department_tbl values(1,'Computer Science',2),(2,'Mathametics',1),(3,'Geography',null)
+
+select * from department_tbl
+
+with cte as(
+			select s.std_name,d.dept_name from student as s
+			join department_tbl as d on d.std_id=s.id
+) from cte
+
+use BikeStores
+
+with cte_category_counts ( category_id, category_name, product_count)
+as
+(
+			SELECT c.category_id, c.category_name, COUNT(p.product_id)
+			FROM production.products p INNER JOIN production.categories c
+			ON c.category_id = p.category_id
+			GROUP BY c.category_id, c.category_name
+),
+cte_category_sales(category_id, sales)
+AS
+(
+	SELECT p.category_id, SUM(i.quantity * i.list_price * (1 - i.discount))
+	FROM sales.order_items i
+	INNER JOIN production.products p
+	ON p.product_id = i.product_id
+	INNER JOIN sales.orders o
+	ON o.order_id = i.order_id
+	WHERE order_status = 4
+	GROUP BY p.category_id
+)
+SELECT c.category_id, c.category_name, c.product_count, s.sales
+FROM cte_category_counts c INNER JOIN cte_category_sales s
+ON s.category_id = c.category_id
+ORDER BY c.category_name;
+
+use cte_DB
+CREATE TABLE tblDepartment
+(
+DeptId int Primary Key,
+DeptName nvarchar(20)
+)
+
+CREATE TABLE tblEmployee
+(
+Id int Primary Key,
+Name nvarchar(30),
+Gender nvarchar(10),
+DepartmentId int
+)
+select * from employee
+
+declare @tblvariable
+
+
+with cte_numbers(n,weekday)
+as
+(
+	select 1,DATENAME(dw,1)
+	union all
+	select n+1,DATENAME(dw,n+1)
+	from cte_numbers
+	where n<=6
+) select weekday from cte_numbers
+
+SELECT 0, DATENAME(DW, 0)use BikeStoreswith cte_orgas(	select staff_id,first_name,manager_id	from sales.staffs	where manager_id is null	union all	select e.staff_id,e.first_name,e.manager_id	from sales.staffs as e	inner join cte_org as o	on e.manager_id=o.staff_id)select * from cte_orgCreate Table tblEmployee(
+				[EmployeeId] int Primary key,
+				[Name] nvarchar(20),
+				[ManagerId] int
+)Insert into tblEmployee values (1, 'Tom', 2)
+Insert into tblEmployee values (2, 'Josh', null)
+Insert into tblEmployee values (3, 'Mike', 2)
+Insert into tblEmployee values (4, 'John', 3)
+Insert into tblEmployee values (5, 'Pam', 1)
+Insert into tblEmployee values (6, 'Mary', 3)
+Insert into tblEmployee values (7, 'James', 1)
+Insert into tblEmployee values (8, 'Sam', 5)
+Insert into tblEmployee values (9, 'Simon', 1)
+create table jobs_tbl(
+					job_id int primary key,
+					job_title varchar(100)
+					)
+insert into jobs_tbl values(1,'CEO'),(2,'Manager'),(3,'Engineer'),(4,'Developer'),(5,'Analytics'),(6,'HR Manager'),(7,'Sales manager'),(8,'Accounts'),
+(9,'Market team sp'),(10,'Intern')
+
+select * from jobs_tbl
+
+create table Employee_tbl(
+						emp_id int primary key,
+						manager_id int foreign key references Employee_tbl(emp_id),
+						emp_name varchar(100),
+						salary money,
+						job_id int foreign key references jobs_tbl(job_id)
+						)
+insert into Employee_tbl (emp_id, manager_id, emp_name, salary, job_id) values(1, NULL, 'Biplab Sir', 50000, 1),
+(2, 1, 'Subrata', 45000, 2),(3, 1, 'Pranab', 48000, 2),(4, 2, 'Awnesha', 55000, 3),(5, 2, 'Gobinda', 52000, 3),(6, 3, 'Hirak', 47000, 3),
+(7, 3, 'Krishna', 49000, 1),(8, 2, 'Laxmi', 51000, 2),(9, 4, 'Sumaya', 51000, 5),(10, 6, 'Radha', 51000, 6)
+
+select * from jobs_tbl
+select * from Employee_tbl
+
+with cte(emp_id,manager_id,emp_name,job_title,job_id,[level])
+as
+(
+	select e1.emp_id,e1.manager_id,e1.emp_name,j.job_title,j.job_id,1
+	from Employee_tbl as e1
+	join jobs_tbl as j on j.job_id=e1.job_id
+	where e1.manager_id is null
+
+	union all
+
+	select Employee_tbl.emp_id,Employee_tbl.manager_id,Employee_tbl.emp_name,jobs_tbl.job_title,jobs_tbl.job_id,cte.[level]+1
+	from Employee_tbl 
+	join cte  on Employee_tbl.manager_id=cte.emp_id
+	join jobs_tbl on Employee_tbl.job_id=jobs_tbl.job_id
+
+	
+)select * from cte
+
+
+
+--select em.emp_id,em.manager_id,em.emp_name,jb.job_title,jb.job_id,cte_EmployeByJob.[level]
+--from cte_EmployeByJob as em
+--left join cte_EmployeByJob as jb on em.manager_id=jb.emp_id
+
+
+use cte_DB
+
+CREATE TABLE [Product] (
+    [Product_Id] INT PRIMARY KEY,
+    [Product_Name] VARCHAR(100)
+);
+
+INSERT INTO [Product] ([Product_Id], [Product_Name]) VALUES
+(1, 'Laptop'),
+(2, 'CPU'),
+(3, 'RAM'),
+(4, 'MotherBoard'),
+(5, 'Keyboard'),
+(6, 'SSD'),
+(7, 'HDD');
+
+CREATE TABLE Component_Product (
+    Component_Product_id INT,
+    Product_id INT,
+    Quantity INT,
+    PRIMARY KEY (Component_Product_id, Product_id),
+    FOREIGN KEY (Component_Product_id) REFERENCES Product(Product_Id),
+    FOREIGN KEY (Product_id) REFERENCES Product(Product_Id)
+);
+
+INSERT INTO Component_Product (Component_Product_id, Product_id, Quantity) VALUES
+(1, 1, 1),  -- Component_Product_id 1 is a component of Product_id 1 (Smartphone) with a quantity of 1
+(2, 2, 1),  -- Component_Product_id 2 is a component of Product_id 2 (Laptop) with a quantity of 1
+(3, 3, 1),  -- Component_Product_id 3 is a component of Product_id 3 (Tablet) with a quantity of 1
+(4, 4, 1),  -- Component_Product_id 4 is a component of Product_id 4 (Smartwatch) with a quantity of 1
+(5, 5, 1),  -- Component_Product_id 5 is a component of Product_id 5 (Headphones) with a quantity of 1
+(6, 1, 1),  -- Component_Product_id 6 is a component of Product_id 1 (Smartphone) with a quantity of 1
+(6, 4, 1);  -- Component_Product_id 6 is also a component of Product_id 4 (Smartwatch) with a quantity of 1
+
+
+select * from Product
+select * from Component_Product
+-------------------------------------------------------------------------------------------------------------
+--16/02/2024
+--fibonaci using cte
+
+with cte_fibo(n,f_number,next_number)
+as
+(
+	select 0,0,1
+	union all
+	select 
+		f.n+1,
+		f.next_number,
+		f.next_number+f.f_number
+	from cte_fibo as f
+	where f.n<7
+)select * from cte_fibo
+--where [level]=7
+
+--factorial using cte
+with cte_factorial(n,cte_factorial)
+as
+(	
+	select 1,1
+
+	union all
+
+	select n+1, (n+1) * cte_factorial
+	from cte_factorial
+	where n<6
+)select n,cte_factorial
+from cte_factorial
+
+
+
+--cursor
+
+select * from SampleTable
+
+alter table SampleTable drop column readStatus
+
+declare @id int, @countryName varchar(max)
+declare country_coursor cursor
+for select id,countryName
+from SampleTable
+
+open country_coursor
+
+fetch next  from country_coursor into @id,@countryName
+while @@FETCH_STATUS=0
+	begin
+		print cast(@id as varchar) +' '+ @countryName 
+		fetch next  from country_coursor into @id,@countryName
+	end
+
+close country_coursor
+
+DEALLOCATE country_coursor
+
+
+drop table stdudent_tbl
+create table stdudent_tbl(
+							std_id int  identity primary key,
+							std_name varchar(100),
+							[location] varchar(100)
+						)
+
+INSERT INTO stdudent_tbl (std_name, location) VALUES
+('Ravi Kumar', 'Delhi'),
+('Priya Sharma', 'Mumbai'),
+('Amit Singh', 'Bangalore'),
+('Sneha Patel', 'Ahmedabad'),
+('Rahul Gupta', 'Kolkata'),
+('Divya Mishra', 'Chennai'),
+('Vivek Reddy', 'Hyderabad'),
+('Anjali Desai', 'Pune');
+
+
+select * from stdudent_tbl
+
+
+drop table student_tbl_2
+create table student_tbl_2(
+							id int identity primary key,
+							[state] varchar(100)
+							)
+INSERT INTO student_tbl_2 ([state]) VALUES
+('Andhra Pradesh'),
+('Arunachal Pradesh'),
+('Assam'),
+('Bihar'),
+('Chhattisgarh'),
+('Goa'),
+('Gujarat'),
+('Haryana');
+
+select * from student_tbl_2
+
+
+alter table student_tbl_2 add city varchar(100)
+
+create proc usp_details
+as
+begin
+		declare @std_id int;
+		declare @std_name varchar(max);
+		declare @location varchar(max);
+
+
+		declare cursor_stdudent_tbl cursor 
+		for select std_id, std_name, [location] from stdudent_tbl;
+
+		open cursor_stdudent_tbl
+
+		fetch next from cursor_stdudent_tbl into @std_id, @std_name, @location
+		while @@FETCH_STATUS=0
+				begin
+					update student_tbl_2 set city=@location where id=@std_id
+					fetch next from cursor_stdudent_tbl into @std_id, @std_name, @location
+				end
+		close cursor_stdudent_tbl
+		deallocate cursor_stdudent_tbl
+end
+
+drop proc usp_details
+
+exec usp_details
+select * from student_tbl_2
+
+
+create table department_tbl(
+							dept_id int identity primary key,
+							dept_name varchar(100)
+							)
+
+insert into department_tbl values ('IT'),('Admin'),('System'),('Developer')
+select * from department_tbl
+
+drop table employee_tbl
+
+create table Employee_tbl(
+							emp_id int identity primary key,
+							emp_name varchar(100),
+							salary money,
+							d_id int foreign key references department_tbl(dept_id)
+							)
+
+INSERT INTO Employee_tbl (emp_name, salary, d_id) VALUES
+('Subrata', 50000, 1),
+('Pranab', 45000, 2),
+('Krisna', 48000, 2),
+('Radha', 55000, 3),
+('laxmi', 52000, 3),
+('Sumon', 47000, 3),
+('Sayan', 49000, 1),
+('rahul', 51000, 2);
+
+select * from Employee_tbl
+select * from department_tbl
+
+
+create table temp_tbl(
+						temp_id int primary key,
+						temp_name varchar(100),
+						totalSal money
+						)
+
+
+create proc usp_emp_details
+as
+begin
+		declare @dept_id int 
+		declare @dept_name varchar(max)
+		declare @totalSal money
+
+		declare cursor_Employee cursor 
+		for select  d.dept_id, d.dept_name, sum(e.salary) 
+			from department_tbl as d 
+			join Employee_tbl as e
+			on e.d_id=d.dept_id
+			group by d.dept_id, d.dept_name
+
+		open cursor_Employee
+		fetch next from cursor_Employee into @dept_id, @dept_name,@totalSal
+		while @@FETCH_STATUS=0
+			begin
+				insert into temp_tbl values(@dept_id, @dept_name,@totalSal)
+				fetch next from cursor_Employee into @dept_id, @dept_name,@totalSal
+			end
+
+		close cursor_Employee
+		deallocate cursor_Employee
+end 
+
+exec usp_emp_details
+
+
+truncate table temp_tbl
+
+select * from temp_tbl
+
+
+
