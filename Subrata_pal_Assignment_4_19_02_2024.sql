@@ -55,7 +55,8 @@ with cte_Paths as (
     from graph_tbl
     inner join  node_tbl 
 	on graph_tbl.Start_Node = node_tbl.Node_id
-    
+    where start_Node=1
+
     union all
 
     select g.Start_Node,  g.End_Node, rp.Path + ' -> ' + cast(n.node_id as varchar(max))
@@ -191,6 +192,8 @@ create table transaction_tbl(
 							quantity int,
 							transaction_date date
 							)
+drop table transaction_tbl
+drop table product_tbl
 
 insert into product_tbl (product_name, stock_quantity) values('Face Wash', 100),('Creame', 200),('Powder', 150),
 ('Oil', 300)
@@ -204,7 +207,8 @@ insert into transaction_tbl (product_id, transaction_type, quantity, transaction
 select * from product_tbl
 select * from transaction_tbl
 
-create proc usp_transDetails
+
+alter proc usp_transDetails
 as
 begin
 	declare @trans_id int
@@ -226,10 +230,10 @@ begin
 		begin transaction
 			if @transaction_type = 'In'
 				begin 
-					update product_tbl set stock_quantity = stock_quantity + @quantity where product_id = @product_id
+					update product_tbl set stock_quantity = @stock_quantity + @quantity where product_id = @product_id
 					commit tran
 				end
-			else if @transaction_type = 'Out' and @stock_quantity>@quantity
+			else if @transaction_type = 'Out' and @stock_quantity>=@quantity
 				begin
 					update product_tbl set stock_quantity = stock_quantity - @quantity where product_id = @product_id
 					commit tran
@@ -237,10 +241,10 @@ begin
 			else if @transaction_type = 'Out' and @stock_quantity<@quantity
 				begin
 					raiserror ('Stock not availabe',16,1)
-					rollback tran
+					rollback 
 				end
-			fetch next from cr_for_transaction into @trans_id,@product_id,@transaction_type,@quantity,@stock_quantity
-		end
+		fetch next from cr_for_transaction into @trans_id,@product_id,@transaction_type,@quantity,@stock_quantity
+	end
 	close cr_for_transaction 
 	deallocate cr_for_transaction 
 end

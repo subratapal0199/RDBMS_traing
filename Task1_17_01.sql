@@ -1,4 +1,4 @@
-create database [studentDB]
+ create database [studentDB]
 use studentDB
 alter database [studentDB] modify name=[student_new_DB]
 exec sp_renamedb 'student_new_DB','StudentDB'
@@ -3498,5 +3498,275 @@ truncate table temp_tbl
 
 select * from temp_tbl
 
+--user define table type
+CREATE TYPE empTempTabtype AS Table (
+										ID int identity(1,1),
+										[name] varchar(100) default('ravi'), 
+										age int, 
+										[location] VARCHAR(100)
+									)
 
 
+
+
+
+create type ut_employee_type as table (
+										id int not null,
+										emp_name varchar(100)
+										)
+
+create table new_tabl(
+						id int ,
+						name varchar(100)
+						)
+
+create proc usp_ut_emp(@emp_details ut_employee_type readonly)
+as
+begin
+	insert into new_tabl(id,name)
+	select * from @emp_details
+end
+
+
+
+DECLARE @employeeTable ut_employee_type
+
+insert into @employeeTable 
+			select 1,'Sumon'
+exec usp_ut_emp @employeeTable
+
+select * from new_tabl
+
+--INSERT INTO @employeeTable (id, emp_name)
+--VALUES 
+--    (1, 'John'),
+--    (2, 'Alice'),
+--    (3, 'Bob'),
+--    (4, 'Emily'),
+--    (5, 'Michael'),
+--    (6, 'Sophia');
+
+--DECLARE @employeeTable ut_employee_type;
+--select * from @employeeTable
+---------------------------------------------------------------------------------------------------
+--20/02/2024
+
+select * from department_tbl
+select * from Employee_tbl
+
+alter view vw_employee
+as
+	select * from Employee_tbl
+	join department_tbl on Employee_tbl.d_id=department_tbl.dept_id
+	where department_tbl.dept_id=2 and Employee_tbl.emp_name='rahul'
+	
+
+alter view vw_employee
+as
+	select * from Employee_tbl
+	
+
+select * from vw_employee
+
+update vw_employee set d_id=1
+
+insert into vw_employee values('Subhasis',16000,4)
+update vw_employee set emp_name='Krishna',salary=45000,d_id=2
+where emp_id=9
+
+delete from vw_employee where emp_id=9
+
+--complex view
+alter view vw_employee
+as
+	select  e.emp_id,e.emp_name,e.salary,d.dept_name 
+	from Employee_tbl as e
+	join department_tbl as d 
+	on e.d_id=d.dept_id
+	--where department_tbl.dept_id=2 and Employee_tbl.emp_name='rahul'
+
+select * from vw_employee
+
+alter view vw_employee
+as
+	select d_id,COUNT(*) as totalEmp 
+	from Employee_tbl
+	group by d_id
+
+select * from vw_employee
+
+Create Table ##TestTempTable(Id int, Name nvarchar(20), Gender nvarchar(10))
+Insert into ##TestTempTable values(101, 'ABC', 'Male')
+Insert into ##TestTempTable values(102, 'PQR', 'Female')
+Insert into ##TestTempTable values(103, 'XYZ', 'Female')
+
+select * from dbo.##TestTempTable
+
+
+Create View vw_OnTempTable
+as
+	Select Id, Name, Gender
+	from ##TestTempTable
+
+
+select * from Employee_tbl
+select * from department_tbl
+
+alter view vw_empoyeeDetails
+as
+	select e.emp_id,e.emp_name,d.dept_name,e.salary
+	from Employee_tbl as e
+	inner join department_tbl as d 
+	on e.d_id=d.dept_id
+	where d.dept_name='IT' or d.dept_name='Admin'
+
+select * from vw_empoyeeDetails
+
+--create view using another view 
+create view vw_emp_in
+as
+	select * from vw_empoyeeDetails
+	where dept_name='IT'
+
+select * from vw_emp_in
+
+--View or function 'vw_emp_in' is not updatable because the modification affects multiple base tables.
+insert into vw_emp_in values(9,'Pupai','IT',13000)
+
+alter trigger tr_instateof on vw_emp_in
+instead of insert
+as
+	begin
+		declare @dept_id int
+
+		select @dept_id=d.dept_id
+		from department_tbl as d
+		join inserted as i 
+		on d.dept_name=i.dept_name
+
+		if(@dept_id is null)
+		begin
+			raiserror('Invalid department name',16,1)
+			return
+		end
+
+		insert into Employee_tbl (emp_name,salary,d_id)
+		select emp_name,salary,@dept_id from inserted
+	end
+
+--Now i can insert the data 
+insert into vw_emp_in values(9,'Bauri','IT',13000)
+
+	
+------------------------------------------------------------------------------------------------------
+--21/02/2024
+--job schedule
+CREATE DATABASE ShoppingCart_DBuse ShoppingCart_DBCREATE TABLE Orders(
+				OrderId INT,
+				CustomerId INT,
+				Amount INT,
+				OrderDate DATETIME
+			)CREATE TABLE OrdersHistory(
+				OrderId INT,
+				CustomerId INT,
+				Amount INT,
+				OrderDate DATETIME
+			)INSERT INTO Orders VALUES (101, 100001, 10000, GETDATE())
+INSERT INTO Orders VALUES (102, 100003, 10000, GETDATE())
+INSERT INTO Orders VALUES (103, 100001, 30000, GETDATE())
+INSERT INTO Orders VALUES (104, 100005, 50000, GETDATE())
+INSERT INTO Orders VALUES (105, 100003, 70000, GETDATE())select * from Ordersselect * from OrdersHistoryINSERT INTO Orders VALUES (106, 100016, 70000, GETDATE())---------------------------------------------------------------------------------------------------No Lockselect * from OrdersHistorybegin tran
+delete from OrdersHistory where CustomerId=100004 
+begin tran
+update OrdersHistory set Amount = 20 where OrderId=101
+
+select @@TRANCOUNT
+
+sp_who2 53
+
+rollback
+
+select  * from OrdersHistory for xml auto
+
+alter view vw_orderHistory
+as
+	select * from OrdersHistory
+	where CustomerId=100001
+	with check option
+
+select * from vw_orderHistory
+
+insert into vw_orderHistory values(111,100004,20000,GETDATE())
+
+SELECT id, ctext, text FROM SYSCOMMENTS
+WHERE ID = OBJECT_ID('vw_orderHistory')
+
+sp_helptext vw_orderHistory
+
+alter view vw_orderHistory
+WITH ENCRYPTION
+as
+	select * from OrdersHistory
+	where CustomerId=100001
+	with check option
+
+SELECT id, ctext, text FROM SYSCOMMENTS
+WHERE ID = OBJECT_ID('vw_orderHistory')
+
+sp_helptext vw_orderHistory
+
+
+alter view vw_orderHistory
+WITH SCHEMABINDING
+as
+	select OrderId,OrderDate from dbo.OrdersHistory
+	where CustomerId=100001
+	with check option
+
+drop table dbo.OrdersHistory
+
+alter table dbo.OrdersHistory alter column OrderDate date
+alter table dbo.OrdersHistory drop column orderDate
+
+SET STATISTICS IO onselect OrderId,OrderDate from dbo.OrdersHistoryselect * from OrdersHistoryuse BikeStoresselect * from sales.customersuse ShoppingCart_DBCREATE TABLE [Employee](
+[EmployeeID] INT NOT NULL,
+[Name] VARCHAR(50),
+[Code] INT NOT NULL
+)INSERT INTO Employee VALUES(1, 'James', 10001)
+INSERT INTO Employee VALUES(2, 'David', 10002)
+INSERT INTO Employee VALUES(3, 'Pam', 10003)
+INSERT INTO Employee VALUES(4, 'Sara', 10004)
+INSERT INTO Employee VALUES(5, 'Smith', 10005)
+INSERT INTO Employee VALUES(6, 'Anurag', 10006)
+INSERT INTO Employee VALUES(7, 'Preety', 10007)
+INSERT INTO Employee VALUES(8, 'Priyanka', 10008)SELECT * FROM Employee WHERE Code = 10006;TRUNCATE TABLE EmployeeDECLARE @NoOfRows INT, @ID INT;
+DECLARE @Name VARCHAR(20)
+SET @NoOfRows = 10000;
+SET @ID = 1;
+WHILE @NoOfRows <= 30000
+BEGIN
+SET @Name = 'Name - ' + CAST(@ID AS VARCHAR(10))
+INSERT INTO Employee VALUES(@ID, @Name, @NoOfRows)
+SET @ID = @ID + 1
+SET @NoOfRows = @NoOfRows + 1
+END;select * from EmployeeSET STATISTICS IO ON
+SELECT * FROM Employee WHERE Code = 26640ALTER TABLE Employee ADD CONSTRAINT unique_code UNIQUE (Code);CREATE UNIQUE CLUSTERED INDEX IX_employee_ID ON Employee(employeeid ASC)SELECT * FROM Employee WHERE Code = 26640;CREATE UNIQUE NONCLUSTERED INDEX IX_employee_Code ON Employee(code ASC) INCLUDE
+(employeeid, name);
+
+SELECT employeeid FROM Employee WHERE Code = 26640
+
+SELECT employeeid,name FROM Employee WHERE Code = 26640
+
+select * from sys.allocation_units
+
+
+SELECT
+t.NAME AS TableName, p.rows AS RowCounts, SUM(a.total_pages) AS TotalPages,
+SUM(a.used_pages) AS UsedPages, (SUM(a.total_pages) - SUM(a.used_pages)) AS UnusedPages
+FROM sys.tables t
+INNER JOIN sys.indexes i ON t.OBJECT_ID = i.object_id
+INNER JOIN sys.partitions p ON i.object_id = p.OBJECT_ID AND i.index_id = p.index_id
+INNER JOIN sys.allocation_units a ON p.partition_id = a.container_id
+WHERE t.NAME = 'Employee' AND t.is_ms_shipped = 0 AND i.OBJECT_ID > 255
+GROUP BY t.Name, p.Rows
+ORDER BY t.Name
