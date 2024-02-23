@@ -186,7 +186,7 @@ return
 		where [DepartmentId]=@Dept_id
 )
 
-select * from fn_getEmpByDeptID(1)
+select * from fn_getEmpByDeptid(1)
 
 select d.[dept_Id],e.[emp_Name],e.[Gender],e.[Salary]
 from [mc].[Department_tbl] as d
