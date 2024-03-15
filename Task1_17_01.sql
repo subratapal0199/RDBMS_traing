@@ -3770,3 +3770,78 @@ INNER JOIN sys.allocation_units a ON p.partition_id = a.container_id
 WHERE t.NAME = 'Employee' AND t.is_ms_shipped = 0 AND i.OBJECT_ID > 255
 GROUP BY t.Name, p.Rows
 ORDER BY t.Name
+
+
+
+--img insert in the table
+CREATE TABLE myimages(
+						id int, 
+						img varbinary(max)
+					)
+INSERT INTO dbo.myimages values (1, (SELECT * FROM OPENROWSET(BULK N'C:\Users\Administrator\Downloads\image5.jpg', SINGLE_BLOB) as T1))
+select * from dbo.myimages
+
+---------------------------------------------------------------------
+create database OnlingShopingMarket
+use OnlingShopingMarket
+
+create table adminn(
+					ad_id int primary key identity,
+					ad_name nvarchar(50) not null unique,
+					ad_password nvarchar(20) not null unique
+					)
+insert into adminn (ad_name,ad_password)values('Subrata0199','Sub@123'),('paranv69','parn@69')
+
+select * from adminn
+
+create proc usp_adminLogin(
+							@adminName varchar(50),
+							@pwd varchar(50)
+							)
+as
+begin
+		select ad_name,ad_password from adminn where ad_name=@adminName and ad_password=@pwd
+end
+
+exec usp_adminLogin 'Subrata0199','Sub@123'
+---------------------------------------------------------------------
+create table cateogory(
+						cat_id int primary key identity,
+						cat_name nvarchar(50) not null unique,
+						cat_img nvarchar(max) not null,
+						ad_id_fk int foreign key references adminn(ad_id)
+						)
+---------------------------------------------------------------------
+create table user_tbl(
+						u_id int primary key identity,
+						u_name nvarchar(50) not null unique,
+						u_password nvarchar(50) not  null unique,
+						u_email nvarchar(50) not null unique,
+						u_contact char(10) not null unique,
+						u_img nvarchar(max) not null,
+						)
+---------------------------------------------------------------------
+create table product(
+						pro_id int primary key identity,
+						pro_name nvarchar(100) not null,
+						pro_img nvarchar(max) not null,
+						pro_price decimal,
+						pro_desc nvarchar(max) not null,
+						cat_id_fk int foreign key references cateogory(cat_id),
+						pro_user_id_fk int foreign key references user_tbl(u_id)
+						)
+---------------------------------------------------------------------
+
+create table State_tbl([state_id] int primary key,[state] varchar(50))
+create table City_tbl([city_id] int primary key,[city] varchar(50),[state_id] int foreign key references [state_tbl](state_id))
+insert into State_tbl values(1,'WB'),(2,'MH'),(3,'GJ'),(4,'KA'),(5,'UP')
+INSERT INTO CITY_TBL VALUES(13,'Lucknow',5),(14,'Benaras',5),(15,'Agra',5)
+select * from city_tbl
+alter procedure usp_getCity(@sid int)
+as
+begin
+select city,state_id
+from city_tbl
+where state_id=@sid
+end
+exec  usp_getCity 1
