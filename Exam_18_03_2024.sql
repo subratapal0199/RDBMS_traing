@@ -205,13 +205,69 @@ create table Employee(
 					Salary int,
 					emp_group varchar(20)
 					)
-drop table Employee
+select * from Employee
 
 insert into Employee values('Subrata',20000,'Admin')
 select * from Employee where Emp_name like 'x%'
+select Emp_id,Emp_name,Salary,emp_group from Employee where Emp_id=1
+insert into Employee(Emp_id,Emp_name,Salary,emp_group)values();
+update Employee set Emp_name='Pallabi',Salary=5000,emp_group='Developer' where Emp_id=10
+delete from Employee
+--------------------------------------------------------------------------------
+--cascading DropDownList
+create table Country(
+						Id int primary key,
+						[Name] nvarchar(100)
+					)
+insert into Country values(1,'India'),(2,'USA'),(3,'Canada'),(4,'Bangadesh'),(5,'Pakistan')
+select * from Country
+
+select Id,Name from Country 
 
 
+create table [State]
+(
+	[state_id] int primary key,
+	[state_name] varchar(60),
+	[cou_id] int foreign key references Country([Id])
+)
+INSERT INTO [State] ([state_id],[state_name], [cou_id])
+VALUES 
+    (1,'Delhi', 1), -- Indian state belongs to India (ID: 1)
+	(2,'West Bengal',1),
+	(3,'Maharastra',1),
+    (4,'California', 2),-- USA state belongs to USA (ID: 2)
+	(5,'New York',2),
+	(6,'Maxico',2),
+    (7,'Ontario', 3), -- Canada state belongs to Canada (ID: 3)
+	(8,'British columbia',3),
+    (9,'Dhaka', 4), -- Bangladesh state belongs to Bangladesh (ID: 4)
+	(10,'Barisal',4),
+    (11,'Karachi', 5); -- Pakistan belongs to Pakistan (ID: 5)
+select * from [State]
 
+select [state_name] from [State] where cou_id=1
+
+create table City
+(
+	[city_id] int primary key,
+	[city_name] varchar(60),
+	[state_id] int foreign key references [State]([state_id])
+)
+INSERT INTO City ([city_id], [city_name], [state_id])
+VALUES (1,'Lal kote',1),(2,'Siri',1),(3,'Jahanpanah',1),
+		(4,'Kolkata',2),(5,'Mednipur',2),(6,'Bankura',2),
+		(7,'Mumbai',3),(8,'Pune',3),(9,'Nagpur',3),
+		(10,'Los Angels',4),(11,'San francisco',4),(12,'San diego',4),
+		(13,'Albany',5),(14,'Mount vernon',5),(15,'Rochester',5),
+		(16,'Leon',6),(17,'Pueble',6),(18,'Tijuann',6),
+		(19,'Toronto',7),(20,'North Bay',7),(21,'Sarnia',7),
+		(22,'Victoria',8),(23,'Prince George',8),(24,'Vernon',8),
+		(25,'Gazipur',9),(26,'Rajbari',9),(27,'Faridpur',9),
+		(28,'Hijla',10),(29,'Babiganj',10),(30,'Muladi',10),
+		(31,'Malir',11),(32,'Sarddar Town',11),(33,'Koranji',11)
+
+select city_name from City where state_id=1
 
 
 
