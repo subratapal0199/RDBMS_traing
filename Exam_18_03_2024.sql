@@ -212,7 +212,7 @@ select * from Employee where Emp_name like 'x%'
 select Emp_id,Emp_name,Salary,emp_group from Employee where Emp_id=1
 insert into Employee(Emp_id,Emp_name,Salary,emp_group)values();
 update Employee set Emp_name='Pallabi',Salary=5000,emp_group='Developer' where Emp_id=10
-delete from Employee
+delete from Employee where Emp_id=11
 --------------------------------------------------------------------------------
 --cascading DropDownList
 create table Country(
@@ -268,6 +268,42 @@ VALUES (1,'Lal kote',1),(2,'Siri',1),(3,'Jahanpanah',1),
 		(31,'Malir',11),(32,'Sarddar Town',11),(33,'Koranji',11)
 
 select city_name from City where state_id=1
+---------------------------------------------------------------------------------------
+use MCC_DB
+create table [dbo].[tbl_file]
+							(
+								[file_id] int IDENTITY(1,1) primary key,  
+								[file_name] nvarchar(max) NOT NULL,  
+								[file_ext] nvarchar(max) NOT NULL,  
+								[file_base6] nvarchar(max) NOT NULL, 
+							)
+--------------------------------------------------------------------------------
+create proc [dbo].[sp_get_all_files]
+as
+begin
+		select [file_id],[file_name],[file_ext]
+		from [dbo].[tbl_file]
+end
+---------------------------------------------------------------------------------
+create proc [dbo].[sp_get_file_details](@file_id int)									
+as
+begin
+		select [file_id],[file_name],[file_ext],[file_base6]
+		from [dbo].[tbl_file]
+		where [file_id]=@file_id
+end
+-----------------------------------------------------------------------------------
+create proc [dbo].[sp_insert_file](
+									@file_name nvarchar(MAX),  
+									@file_ext nvarchar(MAX),  
+									@file_base64 nvarchar(MAX)
+									)
+as
+begin
+		insert into [dbo].[tbl_file]([file_name],[file_ext],[file_base6])values
+		(@file_name,@file_ext,@file_base64)
+end
+-----------------------------------------------------------------------------------
 
 
 
