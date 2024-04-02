@@ -4153,4 +4153,13 @@ begin
 		(@file_name,@file_ext,@file_base64)
 end
 -----------------------------------------------------------------------------------
-select * from dbo.
+CREATE TABLE Transactions (
+    Id INT PRIMARY KEY IDENTITY,
+    Amount DECIMAL(10,2) NOT NULL,
+    CardNumber VARCHAR(16) NOT NULL,
+    ExpiryDate date NOT NULL,
+	CVV int not null
+)
+drop table Transactions
+insert into Transactions(Amount,CardNumber,ExpiryDate,CVV)values()
+select * from Transactions
